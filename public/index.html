@@ -1880,6 +1880,7 @@ function openOutils(){
    ============================================================ */
 function openScan(){ document.getElementById('scanStatus').innerHTML=''; document.getElementById('scanModal').classList.add('show'); }
 function fileToB64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(',')[1]); r.onerror=rej; r.readAsDataURL(file); }); }
+function applyScanToForm(){ applyRosterRow(0); closeModal('scanModal'); }
 function frDateISO(iso){ if(!iso) return ''; const p=(''+iso).split('-'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:iso; }
 function downloadScanExcel(){
   const rows=window._scanRows||[];
@@ -1916,9 +1917,18 @@ async function runScan(){
     if(!rows.length){ status.innerHTML='<div class="valbox err">Aucune CIN détectée dans ce PDF.</div>'; return; }
     roster=rows; rosterIdx=0; formLocked=false;
     save('gc_roster',roster); save('gc_rosterIdx',0);
-    applyRosterRow(0);
     window._scanRows=rows;
-    status.innerHTML=`<div class="valbox ok"><b>✓ ${rows.length} CIN extraite(s)</b> et chargée(s) dans la liste des salariés. Choisis la société et le type de contrat, puis navigue avec « Précédent / Suivant ».</div>
+    renderCompanySelect(); renderForm();
+    let msg, applyBtn='';
+    if(rows.length===1){
+      const r=rows[0];
+      msg=`<b>✓ 1 CIN extraite</b> : ${(r.nomSalarie||'').toUpperCase()}${r.cin?' — CIN '+r.cin:''}.<br>Souhaites-tu l'appliquer au formulaire ?`;
+      applyBtn=`<button class="btn-gold" style="width:100%;margin-top:10px" onclick="applyScanToForm()">✓ Appliquer au formulaire</button>`;
+    } else {
+      msg=`<b>✓ ${rows.length} CIN extraites</b> et chargées dans la liste des salariés.<br>Comme il y en a plusieurs, ferme cette fenêtre puis choisis un salarié dans la liste « Salariés importés » pour l'appliquer.`;
+    }
+    status.innerHTML=`<div class="valbox ok">${msg}</div>
+      ${applyBtn}
       <button class="btn-sec" style="width:100%;margin-top:10px" onclick="downloadScanExcel()">⬇ Télécharger l'Excel (format import)</button>`;
   }catch(e){
     status.innerHTML='<div class="valbox err">Erreur : '+e.message+'</div>';

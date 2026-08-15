@@ -5,7 +5,7 @@
 // dateNaissance, adresse, ville, lieuNaissance } ] } prêt pour le générateur.
 // ============================================================
 
-const MODELS = ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
+const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest", "gemini-2.5-flash-lite"];
 
 const PROMPT = `Ce PDF contient des CARTES D'IDENTITÉ NATIONALES (CIN) MAROCAINES.
 

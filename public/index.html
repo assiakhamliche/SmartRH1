@@ -1920,7 +1920,6 @@ async function runScan(){
     window._scanRows=rows;
     status.innerHTML=`<div class="valbox ok"><b>✓ ${rows.length} CIN extraite(s)</b> et chargée(s) dans la liste des salariés. Choisis la société et le type de contrat, puis navigue avec « Précédent / Suivant ».</div>
       <button class="btn-sec" style="width:100%;margin-top:10px" onclick="downloadScanExcel()">⬇ Télécharger l'Excel (format import)</button>`;
-    setTimeout(()=>closeModal('scanModal'),1600);
   }catch(e){
     status.innerHTML='<div class="valbox err">Erreur : '+e.message+'</div>';
   }finally{ btn.disabled=false; btn.textContent='Lancer l\'extraction'; }

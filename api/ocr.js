@@ -1,11 +1,33 @@
 // ============================================================
 // /api/ocr  —  Extraction OCR des CIN marocaines via Gemini
 // La clé API reste côté serveur (variable d'environnement GEMINI_API_KEY).
-// Reçoit { pdf: "<base64>" }, renvoie { rows: [ { civilite, nomSalarie, cin,
-// dateNaissance, adresse, ville, lieuNaissance } ] } prêt pour le générateur.
 // ============================================================
 
-const MODELS = ["gemini-flash-latest", "gemini-2.5-flash", "gemini-2.0-flash"];
+const FALLBACK_MODELS = ["gemini-flash-latest", "gemini-2.5-flash", "gemini-pro-latest", "gemini-2.5-pro"];
+
+// Découvre les modèles réellement disponibles pour cette clé (supportant generateContent)
+async function listModels(apiKey) {
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}&pageSize=1000`);
+    if (!r.ok) return [];
+    const data = await r.json();
+    const names = (data.models || [])
+      .filter(m => (m.supportedGenerationMethods || []).includes("generateContent"))
+      .map(m => (m.name || "").replace(/^models\//, ""));
+    const score = n => {
+      n = n.toLowerCase(); let s = 0;
+      if (n.includes("flash")) s += 100;
+      if (n.includes("latest")) s += 20;
+      const mm = n.match(/(\d+\.\d+)/); if (mm) s += parseFloat(mm[1]);
+      if (n.includes("lite")) s -= 5;
+      if (n.includes("pro")) s += 1;
+      if (n.includes("exp") || n.includes("thinking") || n.includes("preview")) s -= 30;
+      if (n.includes("vision") || n.includes("embedding") || n.includes("image") || n.includes("tts") || n.includes("live")) s -= 200;
+      return s;
+    };
+    return names.sort((a, b) => score(b) - score(a));
+  } catch (e) { return []; }
+}
 
 const PROMPT = `Ce PDF contient des CARTES D'IDENTITÉ NATIONALES (CIN) MAROCAINES.
 
@@ -113,12 +135,17 @@ export default async function handler(req, res) {
     res.status(400).json({ error: "Requête invalide : " + e.message }); return;
   }
 
-  let raw = "", lastErr = null;
-  for (const model of MODELS) {
+  let candidates = await listModels(apiKey);
+  if (!candidates.length) candidates = FALLBACK_MODELS;
+  candidates = candidates.slice(0, 6);
+
+  let raw = "", lastErr = null, tried = [];
+  for (const model of candidates) {
+    tried.push(model);
     try { raw = await callGemini(model, apiKey, pdfBase64); if (raw) break; }
     catch (e) { lastErr = e; }
   }
-  if (!raw) { res.status(502).json({ error: "Extraction impossible. " + (lastErr ? lastErr.message : "") }); return; }
+  if (!raw) { res.status(502).json({ error: "Extraction impossible. Modèles essayés : " + tried.join(", ") + ". " + (lastErr ? lastErr.message : "") }); return; }
 
   let parsed;
   try {

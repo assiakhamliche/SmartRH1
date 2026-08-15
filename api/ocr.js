@@ -10,12 +10,13 @@ const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest", "
 const PROMPT = `Ce PDF contient des CARTES D'IDENTITÉ NATIONALES (CIN) MAROCAINES.
 
 STRUCTURE (généralement 2 pages par CIN) :
-- RECTO : Nom, Prénom, N° CIN, Date de naissance, Lieu de naissance (مكان الازدياد)
+- RECTO : Nom, Prénom, N° CIN, Date de naissance, Lieu de naissance (مكان الازدياد), Date de validité (صالحة إلى)
 - VERSO : Adresse complète (العنوان / Adresse)
 
 Extrais CHAQUE CIN présente. Renvoie un tableau JSON.
 IMPORTANT :
 - Lieu_Naissance est le lieu de naissance (recto), Adresse est le domicile (verso) : ce sont deux informations différentes.
+- Date_Validite = date de fin de validité de la carte (recto).
 - Civilite = "Monsieur" ou "Madame" selon le prénom.
 - Si une information est absente, laisse une chaîne vide.`;
 
@@ -31,7 +32,8 @@ const RESPONSE_SCHEMA = {
       Lieu_Naissance: { type: "STRING" },
       Adresse: { type: "STRING" },
       Ville: { type: "STRING" },
-      Civilite: { type: "STRING" }
+      Civilite: { type: "STRING" },
+      Date_Validite: { type: "STRING" }
     }
   }
 };
@@ -142,6 +144,7 @@ export default async function handler(req, res) {
       adresse: adresse,
       ville: (cin.Ville || "").trim() || extractVille(adresse),
       lieuNaissance: (cin.Lieu_Naissance || "").trim(),
+      dateValidite: toISO(cin.Date_Validite),
       nationalite: "Marocaine"
     });
   }

@@ -282,10 +282,31 @@
     </div>
     <div class="row2">
       <div class="form-group"><label>Taux représentation (%)</label><input type="number" id="sim_repTaux" value="10" step="0.1" oninput="simCalc()"></div>
-      <div class="form-group"><label>CIMR (part salarié, %)</label><input type="number" id="sim_cimr" value="3" step="0.01" oninput="simCalc()"></div>
+      <div class="form-group"><label>CIMR (taux salarial)</label>
+        <select id="sim_cimr" onchange="simCimrSync(); simCalc()">
+          <option value="0">0 % (pas de CIMR)</option>
+          <option value="3" selected>3,00 %</option>
+          <option value="3.75">3,75 %</option>
+          <option value="4.5">4,50 %</option>
+          <option value="5.25">5,25 %</option>
+          <option value="6">6,00 %</option>
+          <option value="7">7,00 %</option>
+          <option value="7.5">7,50 %</option>
+          <option value="8">8,00 %</option>
+          <option value="8.5">8,50 %</option>
+          <option value="9">9,00 %</option>
+          <option value="9.5">9,50 %</option>
+          <option value="10">10,00 %</option>
+          <option value="11">11,00 %</option>
+          <option value="12">12,00 %</option>
+        </select>
+      </div>
+      <div class="form-group"><label>CIMR (part patronale, % — calculée auto)</label><input type="number" id="sim_cimr_pat" value="3.9" step="0.01" readonly style="background:#f0f0f0;color:#666"></div>
     </div>
     <div class="row2">
       <div class="form-group"><label>Assurance maladie (part salarié, %)</label><input type="number" id="sim_assur" value="1.48" step="0.01" oninput="simCalc()"></div>
+
+      <div class="form-group"><label>Assurance maladie (part patronale, %)</label><input type="number" id="sim_assur_pat" value="1.78" step="0.01" oninput="simCalc()"></div>
       <div class="form-group"></div>
     </div>
     <div id="simResult"></div>
@@ -1754,6 +1775,18 @@ const RATE_CNSS_SAL=0.0448, PLAFOND_CNSS=6000, RATE_AMO_SAL=0.0226;
 const P_CNSS=0.0898, P_ALLOC=0.064, P_FORM=0.016, P_AMO=0.0411; // charges patronales
 const SMIG_2026=3422.72;
 
+// Table de correspondance CIMR salarial → patronal
+const CIMR_TABLE = {
+  0: 0, 3: 3.90, 3.75: 4.88, 4.5: 5.85, 5.25: 6.83,
+  6: 7.80, 7: 9.10, 7.5: 9.75, 8: 10.40, 8.5: 11.05,
+  9: 11.70, 9.5: 12.35, 10: 13.00, 11: 14.30, 12: 15.60
+};
+function simCimrSync(){
+  const sal = parseFloat(document.getElementById('sim_cimr').value)||0;
+  const pat = CIMR_TABLE[sal] ?? 0;
+  document.getElementById('sim_cimr_pat').value = pat;
+}
+
 function irRate(x){ let r=0; for(const [a,rate] of IR_BRACKETS){ if(x>=a) r=rate; } return r; }
 function simBulletin(base, p){
   const g10=p.imp||0, rep=p.rep?base*(p.repTaux||0.10):0, nonImp=(p.panier||0)+(p.transport||0);
@@ -1771,8 +1804,9 @@ function simBulletin(base, p){
   let ir=netImp*rate-50*(p.dep||0)-dec; if(ir<0) ir=0;
   const net=brut-cotSal-ir;
   const pCnss=Math.min(impCNSS,PLAFOND_CNSS)*P_CNSS, pAlloc=impCNSS*P_ALLOC, pForm=impCNSS*P_FORM, pAmo=impCNSS*P_AMO;
-  const patronal=pCnss+pAlloc+pForm+pAmo;
-  return {base, brut, cnss, amo, cimr, assur, rep, cotSal, ir, net, netImp, rate, panier:p.panier||0, transport:p.transport||0, patronal, cout:brut+patronal};
+  const pCimrPat=impCNSS*(p.cimrPat||0), pAssurPat=impCNSS*(p.assurPat||0);
+  const patronal=pCnss+pAlloc+pForm+pAmo+pCimrPat+pAssurPat;
+  return {base, brut, cnss, amo, cimr, assur, rep, cotSal, ir, net, netImp, rate, panier:p.panier||0, transport:p.transport||0, patronal, pCnss, pAlloc, pForm, pAmo, pCimrPat, pAssurPat, cout:brut+patronal};
 }
 function simSolveBase(targetNet, p){
   let lo=0, hi=1000000;
@@ -1788,7 +1822,10 @@ function simReadOpts(){
     rep:document.getElementById('sim_rep').value==='oui',
     repTaux:(parseFloat(document.getElementById('sim_repTaux').value)||0)/100,
     cimr:(parseFloat(document.getElementById('sim_cimr').value)||0)/100,
-    assur:(parseFloat(document.getElementById('sim_assur').value)||0)/100
+    assur:(parseFloat(document.getElementById('sim_assur').value)||0)/100,
+    cimrPat:(parseFloat(document.getElementById('sim_cimr_pat').value)||0)/100,
+
+    assurPat:(parseFloat(document.getElementById('sim_assur_pat').value)||0)/100
   };
 }
 function openSim(){
@@ -1800,7 +1837,9 @@ function openSim(){
   document.getElementById('sim_rep').value='non';
   document.getElementById('sim_repTaux').value=10;
   document.getElementById('sim_cimr').value=3;
+  simCimrSync();
   document.getElementById('sim_assur').value=1.48;
+  document.getElementById('sim_assur_pat').value=1.78;
   simCalc();
   document.getElementById('simModal').classList.add('show');
 }
@@ -1823,7 +1862,13 @@ function simCalc(){
     ${b.assur>0?`<tr><td>Assurance maladie</td><td>− ${fmtNum(b.assur)} DH</td></tr>`:''}
     <tr><td>IR (impôt sur le revenu)</td><td>− ${fmtNum(b.ir)} DH</td></tr>
     <tr class="big ok"><td>Salaire net</td><td>${fmtNum(b.net)} DH</td></tr>
-    <tr class="sep"><td>Charges patronales</td><td>${fmtNum(b.patronal)} DH</td></tr>
+    <tr class="sep"><td><strong>Charges patronales</strong></td><td><strong>${fmtNum(b.patronal)} DH</strong></td></tr>
+    <tr><td>&nbsp;&nbsp;CNSS (8,98 %)</td><td>${fmtNum(b.pCnss)} DH</td></tr>
+    <tr><td>&nbsp;&nbsp;Alloc. familiale (6,4 %)</td><td>${fmtNum(b.pAlloc)} DH</td></tr>
+    <tr><td>&nbsp;&nbsp;Formation prof. (1,6 %)</td><td>${fmtNum(b.pForm)} DH</td></tr>
+    <tr><td>&nbsp;&nbsp;AMO (4,11 %)</td><td>${fmtNum(b.pAmo)} DH</td></tr>
+    ${b.pCimrPat>0?`<tr><td>&nbsp;&nbsp;CIMR</td><td>${fmtNum(b.pCimrPat)} DH</td></tr>`:''}
+    ${b.pAssurPat>0?`<tr><td>&nbsp;&nbsp;Assurance maladie</td><td>${fmtNum(b.pAssurPat)} DH</td></tr>`:''}
     <tr class="big"><td>Coût total employeur</td><td>${fmtNum(b.cout)} DH</td></tr>
   </table>${warn}`;
 }

@@ -1443,7 +1443,24 @@ function renderPreview(){
   save('gc_selCompany',selCompanyId); save('gc_selTpl',selTplId);
 }
 function renderToHTML(corps){
-  const raw=fillTokens(corps);
+  // Pré-filtrer les lignes "> " dont le token d'indemnité est vide ou nul
+  // Pré-filtrer les lignes "> " dont le token d'indemnité est vide ou nul
+  // EXCEPTION : contrat arabe (dir=rtl) — pas de filtrage
+  const INDEM_TOKENS=['indemnitePanier','indemniteTransport','indemniteResponsabilite','indemniteAutres','indemnitePrime','primePanier'];
+  const currentTpl=getTpl(selTplId);
+  const isRtl=(currentTpl.dir||'ltr')==='rtl';
+  const filteredCorps=(!isRtl ? corps.split('\n').filter(ln=>{
+    if(!ln.startsWith('> ')) return true;
+    const tokensInLine=ln.match(/\{\{(\w+)\}\}/g);
+    if(!tokensInLine) return true;
+    for(const tok of tokensInLine){
+      const key=tok.replace(/\{\{|\}\}/g,'');
+      const inIndemList=INDEM_TOKENS.includes(key)||/indem|prime|bonus|alloc/i.test(key);
+      if(inIndemList){ const v=parseFloat(formData[key])||0; return v>0; }
+    }
+    return true;
+  }).join('\n') : corps);
+  const raw=fillTokens(filteredCorps);
   const lines=raw.split('\n');
   let html=''; let inList=false;
   const closeList=()=>{ if(inList){ html+='</ul>'; inList=false; } };

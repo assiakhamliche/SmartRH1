@@ -164,6 +164,7 @@
       <div class="print-pop" id="settingsPop">
         <button onclick="settingsOpen('companies')">Sociétés</button>
         <button onclick="settingsOpen('templates')">Modèles</button>
+        <button onclick="settingsOpen('lock')">🔒 Verrouiller</button>
       </div>
     </div>
     <button class="btn-ghost no-print" onclick="openScan()">Scanner CIN</button>
@@ -1941,9 +1942,26 @@ function newContract(){
 }
 function togglePop(id,e){ e.stopPropagation(); document.querySelectorAll('.print-pop.show').forEach(p=>{ if(p.id!==id) p.classList.remove('show'); }); const t=document.getElementById(id); if(t) t.classList.toggle('show'); }
 function togglePrintMenu(e){ togglePop('printPop',e); }
-function toggleSettings(e){ togglePop('settingsPop',e); }
+const ADMIN_HASH = "83f155d30de7287e134f1b4efcfefe7f40ddd027821e8d37581e9a742250c8d5";
+let isAdmin = (function(){ try{ return localStorage.getItem('gc_admin')==='1'; }catch(e){ return false; } })();
+async function sha256hex(s){
+  try{ const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join(''); }catch(e){ return ''; }
+}
+async function toggleSettings(e){
+  if(e) e.stopPropagation();
+  if(!isAdmin){
+    const code=prompt('Paramétrage réservé. Entre le code d’accès :');
+    if(code===null) return;
+    const h=await sha256hex(code);
+    if(h!==ADMIN_HASH){ alert('Code incorrect.'); return; }
+    isAdmin=true; try{ localStorage.setItem('gc_admin','1'); }catch(e){}
+  }
+  togglePop('settingsPop', e||{stopPropagation(){}});
+}
+function lockSettings(){ isAdmin=false; try{ localStorage.removeItem('gc_admin'); }catch(e){} const p=document.getElementById('settingsPop'); if(p) p.classList.remove('show'); alert('Paramétrage verrouillé.'); }
 function toggleExcel(e){ togglePop('excelPop',e); }
-function settingsOpen(which){ document.getElementById('settingsPop').classList.remove('show'); if(which==='companies') openCompanies(); else openTemplates(); }
+function settingsOpen(which){ document.getElementById('settingsPop').classList.remove('show'); if(which==='companies') openCompanies(); else if(which==='templates') openTemplates(); else if(which==='lock') lockSettings(); }
 function excelAction(which){ document.getElementById('excelPop').classList.remove('show'); if(which==='import') document.getElementById('xlsInput').click(); else downloadTemplate(); }
 function doPrint(kind){ document.getElementById('printPop').classList.remove('show'); if(kind==='word') downloadWord(); else if(kind==='outlook') sendOutlook(); else window.print(); }
 function sendOutlook(){

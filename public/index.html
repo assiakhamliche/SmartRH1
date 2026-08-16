@@ -980,6 +980,153 @@ Les parties élisent domicile en leurs adresses susvisées ou toute autre adress
 
 [[SIGN:L'employeur|{{representant}}|{{fonctionRep}}||Le salarié|{{nomSalarie}}]]`;
 
+const PROJET_PCS2_V2_BODY = `# CONTRAT DE TRAVAIL
+
+ENTRE :
+
+La société **{{societe}}**,
+
+Dont le siège social est établi à {{siege}},
+
+Immatriculée au RC de {{villeSociete}} sous le numéro {{rc}},
+
+Représentée par {{representant}}, {{fonctionRep}}.
+
+Dénommé *l'Employeur*,
+
+> D'UNE PART
+
+ET :
+
+{{civilite}} **{{nomSalarie}}**
+
+Né(e) le {{dateNaissance}}
+
+De nationalité {{nationalite}}
+
+Titulaire de la CIN N° {{cin}}
+
+Demeurant : {{adresse}}
+
+Dénommé *le Salarié,*
+
+> D'AUTRE PART
+
+IL A ETE CONVENU ET ARRETE CE QUI SUIT :
+
+## ARTICLE 1 - ENGAGEMENT
+Le Salarié qui se déclare libre de tout engagement et n'être lié à aucune clause de non-concurrence avec un précédent employeur, est embauché à titre personnel au service de l'employeur. Toute fausse déclaration sur ce point étant de nature à engager sa responsabilité.
+
+## ARTICLE 2 - FONCTION
+Le salarié exercera la fonction de **{{fonction}}**.
+
+En sa qualité, le salarié devra accomplir les fonctions dont la description détaillée est annexée au présent contrat (Annexe 1).
+
+Le salarié exercera ses fonctions sous la responsabilité hiérarchique et fonctionnelle du {{responsable}}.
+
+Tout changement organisationnel et hiérarchique, ainsi que l'évolution des tâches du salarié dans le cadre de ses attributions est accepté par ce dernier, dès lors que lesdites modifications n'ont aucune incidence sur la qualification professionnelle, le statut et la rémunération du salarié.
+
+Le salarié déclare pouvoir souscrire à l'ensemble des stipulations prévues au présent contrat sans aucune restriction ni réserve. Toute fausse déclaration sur ce point l'exposera à des dommages et intérêts.
+
+## ARTICLE 3 - DUREE DU CONTRAT
+Le présent contrat pour accomplir un travail spécifique, prenant effet le {{dateDebut}}, est conclu pour le projet « {{intituleProjet}} ».
+
+## ARTICLE 4 : PERIODE D'ESSAI
+Le présent contrat ne deviendra définitif qu'à l'issue d'une période d'essai de {{periodeEssai}}.
+
+S'agissant d'une période de travail effectif, toute suspension qui l'affecterait, conformément aux dispositions du code de travail, la prolongerait d'une durée égale.
+
+Durant la période d'essai, chacune des parties pourra mettre fin au contrat selon les dispositions du code du travail.
+
+## ARTICLE 5 - LIEU DE TRAVAIL
+Le lieu de travail est situé à la zone relative au Projet.
+
+## ARTICLE 6 - MOBILITE
+L'employeur se réserve la possibilité de modifier, en fonction de l'intérêt de l'entreprise, le lieu de travail géographique initialement indiqué au salarié, sans que cela puisse être considéré par le salarié comme étant une modification essentielle de son contrat de travail.
+
+Ainsi, le salarié s'engage à effectuer tout déplacement professionnel justifié par ses attributions et l'intérêt de l'entreprise, au Maroc et à l'extérieur du Maroc.
+
+L'employeur fait des dispositions relatives à la mobilité, contenues dans les deux précédents alinéas, ainsi que des dispositions de l'article 5, des conditions essentielles du contrat de travail sans lesquelles il n'aurait pas contracté avec le salarié.
+
+## ARTICLE 7 - CONGE ANNUEL PAYE
+Le salarié a droit, après six mois de service continu chez l'employeur, à un congé annuel payé dont la durée est de un jour et demi de travail effectif par mois de service.
+
+## ARTICLE 8 - TEMPS DE TRAVAIL
+Le salarié exercera son travail selon les horaires fixés par la société.
+
+## ARTICLE 9 - REMUNERATION
+La rémunération mensuelle Net est de : {{remNette}} dirhams.
+
+## ARTICLE 10 - OBLIGATIONS GENERALES DU SALARIE
+Dans le cadre de cet emploi, des contacts permanents avec la clientèle existent. En conséquence, le salarié s'engage à respecter l'obligation de courtoisie et de politesse ainsi qu'une tenue vestimentaire correcte.
+
+Le salarié s'engage à la plus grande assiduité et la stricte observation des directives qui lui seront données.
+
+Le salarié s'oblige également à informer l'entreprise sans délai de tout événement qui interviendrait dans sa situation et modifierait les renseignements qui ont pu lui être demandés lors de son embauche.
+
+Le salarié est tenu de conserver en bon état, d'une façon générale, tout le matériel qui lui est confié en vue de l'exécution de son travail. Il ne doit pas utiliser ce matériel à d'autres fins, et notamment à des fins personnelles, sans autorisation.
+
+Dans le cadre du contrat de travail, il est rappelé au salarié les règles suivantes :
+
+- Il est interdit aux salariés d'utiliser une machine ou un matériel qui ne leur aurait pas été assigné ;
+- Tout ce qui est de nature à troubler la bonne marche de l'établissement ou à perturber l'organisation du travail doit être évité, sous réserve des droits reconnus aux salariés.
+
+À titre d'exemple, sont considérés comme contraires aux règles minimales de discipline les faits suivants :
+
+- La consommation ou l'introduction de boisson alcoolisée sur le lieu du travail ;
+- L'usage du téléphone de l'entreprise à titre privé ;
+- Le non-respect du règlement intérieur ;
+- La rédaction et l'expédition de correspondance personnelle avec les moyens de l'entreprise et à ses frais ;
+- Les quêtes, collectes, rassemblements de signature pendant le travail et sans rapport avec ce dernier ;
+- L'introduction de personnes étrangères à l'établissement au sein de l'entreprise.
+
+En cas de manquement à une seule de ces obligations, comme en cas de faute, l'entreprise pourra mettre fin au contrat de travail tout en respectant les textes en vigueur et en se réservant la faculté d'obtenir la réparation du dommage subi.
+
+## Exclusivité
+Le salarié s'interdira de s'occuper, même à titre gratuit, de toute activité, autrement que pour le compte de la société.
+
+Le salarié réservera l'exclusivité de ses services rémunérés à l'employeur pendant toute la durée du présent contrat et en particulier, il s'engage à ne pas travailler pour le compte d'un autre employeur même si ce dernier n'est pas un concurrent direct ou indirect.
+
+Le salarié s'interdit de se livrer pendant la durée du présent contrat à un quelconque acte de concurrence directe ou indirecte au détriment de l'employeur.
+
+## Confidentialité
+Le salarié est lié par le secret professionnel le plus absolu en ce qui concerne les affaires de l'entreprise. Il s'engage notamment à ne pas divulguer, auprès de qui que ce soit, toute information, tout renseignement concernant l'activité, les procédés, les projets et les résultats de l'entreprise, et d'une manière générale toute opération technique, commerciale ou financière, le tout, quelle qu'en soit la connaissance qu'il puisse en avoir.
+
+Le salarié est par ailleurs détenteur des informations relatives aux accès informatiques ainsi qu'aux informations de l'ensemble du réseau de l'employeur. Aussi, il s'engage par le présent contrat à ne pas communiquer ces informations à quelque personne que ce soit à l'exception des personnes dûment habilitées en ce sens par son responsable hiérarchique et à prendre, en bon père de famille, toutes les précautions et conditions de sécurité nécessaires afin d'éviter que toute information confidentielle ne soit divulguée à toute personne non autorisée.
+
+Cette obligation de confidentialité sera effective pendant toute la durée du présent contrat et demeurera après son expiration.
+
+## Matériels et Documents
+Le salarié ne peut prendre, en vue de son usage personnel ou tout autre usage non autorisé expressément, des copies ou des reproductions de tous documents, informations et matériels appartenant ou communiqués par l'employeur, ou toute autre société ou filiale du Groupe.
+
+Le salarié s'engage à garder le secret sur toutes les questions appelées à connaître directement ou indirectement à l'occasion de son travail que ce soit de l'extérieur comme à l'intérieur de l'entreprise, y compris en dehors des nécessités de service, à l'égard de ses collègues.
+
+## ARTICLE 11 - FRAIS PROFESSIONNELS
+La société s'engage à rembourser les frais engagés par le salarié pour l'exercice de ses fonctions et dans le cadre de ses attributions, ceci sur présentation d'un état justificatif et selon les conditions et barèmes en vigueur dans l'entreprise.
+
+## ARTICLE 12 - SANTE, RETRAITE ET PREVOYANCE
+Le salarié sera enregistré auprès de la caisse nationale de la sécurité sociale (CNSS).
+
+## ARTICLE 14 - RUPTURE DU CONTRAT DE TRAVAIL
+Chacune des parties pourra mettre fin au contrat de travail sous réserve de respecter les règles fixées à cet effet par la loi.
+
+Lors de la cessation de son contrat, le salarié devra, avant de quitter l'entreprise, restituer tous matériels, objets, documents en sa possession et appartenant à l'entreprise.
+
+## ARTICLE 15 - AUTRES DISPOSITIONS
+Les dispositions non prévues par le présent contrat de travail sont régies par la législation du travail.
+
+Le présent contrat annule et remplace toutes discussions, accords verbaux ou écrits passés antérieurement à la date du présent contrat entre le salarié et l'employeur.
+
+La loi applicable pour l'interprétation et l'exécution du présent contrat est la loi marocaine et tout désaccord lié au présent contrat sera porté devant les juridictions marocaines.
+
+Les parties élisent domicile en leurs adresses susvisées ou toute autre adresse qui serait portée à la connaissance de l'employeur par le salarié contre accusé de réception en vue de mettre à jour son dossier permanent de sorte que les parties reconnaissent que toute notification adressée à leur domicile susvisé sera valablement délivrée.
+
+*Fait en deux exemplaires originaux dont un pour chacune des parties*
+
+*Signatures précédées de la mention manuscrite « Bon pour accord - Lu et approuvé ».*
+
+[[SIGN:L'employeur|{{representant}}|{{fonctionRep}}||Le salarié|{{nomSalarie}}]]`;
+
 const PROJET_PCS2_BODY = `# CONTRAT DE TRAVAIL
 
 ENTRE :
@@ -1134,7 +1281,8 @@ const DEFAULT_TEMPLATES = [
   {id:'t_cdd', nom:'Contrat CDD (arabe)', corps:CDD_BODY, dir:'rtl'},
   {id:'t_projet', nom:'Contrat PROJET', corps:PROJET_BODY, defaults:{responsable:'Directeur de Département'}},
   {id:'t_fiber', nom:'Contrat PROJET FIBERBUILD', corps:PROJET_FIBER_BODY, defaults:{responsable:'Chef de Projet'}},
-  {id:'t_pcs2', nom:'Contrat PROJET PCS (net)', corps:PROJET_PCS2_BODY, defaults:{responsable:'Chef de Projet'}}
+  {id:'t_pcs2', nom:'Contrat PROJET PCS (net)', corps:PROJET_PCS2_BODY, defaults:{responsable:'Chef de Projet'}},
+  {id:'t_pcs2_v2', nom:'Contrat PROJET PCS2 (original)', corps:PROJET_PCS2_V2_BODY, defaults:{responsable:'Chef de Projet', periodeEssai:'30 jours'}}
 ];
 
 /* Liste des fonctions (postes) — modifiable */

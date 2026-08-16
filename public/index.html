@@ -278,7 +278,15 @@
     </div>
     <div class="row2">
       <div class="form-group"><label>Indemnités imposables (autres)</label><input type="number" id="sim_imp" value="0" oninput="simCalc()"></div>
-      <div class="form-group"><label>Indemnité de représentation (10%)</label><select id="sim_rep" class="field" onchange="simCalc()"><option value="non">Non</option><option value="oui">Oui</option></select></div>
+      <div class="form-group"><label>Indemnité de représentation</label><select id="sim_rep" class="field" onchange="simCalc()"><option value="non">Non</option><option value="oui">Oui</option></select></div>
+    </div>
+    <div class="row2">
+      <div class="form-group"><label>Taux représentation (%)</label><input type="number" id="sim_repTaux" value="10" step="0.1" oninput="simCalc()"></div>
+      <div class="form-group"><label>CIMR (part salarié, %)</label><input type="number" id="sim_cimr" value="3" step="0.01" oninput="simCalc()"></div>
+    </div>
+    <div class="row2">
+      <div class="form-group"><label>Assurance maladie (part salarié, %)</label><input type="number" id="sim_assur" value="1.48" step="0.01" oninput="simCalc()"></div>
+      <div class="form-group"></div>
     </div>
     <div id="simResult"></div>
     <div class="sim-note">Estimation basée sur le barème (CNSS 4,48 % plafond 6 000, AMO 2,26 %, IR mensuel 2026). À vérifier avant tout usage officiel.</div>
@@ -1748,12 +1756,14 @@ const SMIG_2026=3422.72;
 
 function irRate(x){ let r=0; for(const [a,rate] of IR_BRACKETS){ if(x>=a) r=rate; } return r; }
 function simBulletin(base, p){
-  const g10=p.imp||0, rep=p.rep?base*0.10:0, nonImp=(p.panier||0)+(p.transport||0);
+  const g10=p.imp||0, rep=p.rep?base*(p.repTaux||0.10):0, nonImp=(p.panier||0)+(p.transport||0);
   const brut=base+g10+rep+nonImp;
   const impIR=base+g10, impCNSS=base+g10;
   const cnss=Math.min(impCNSS,PLAFOND_CNSS)*RATE_CNSS_SAL;
   const amo=impCNSS*RATE_AMO_SAL;
-  const cotSal=cnss+amo;
+  const cimr=impCNSS*(p.cimr||0);
+  const assur=impCNSS*(p.assur||0);
+  const cotSal=cnss+amo+cimr+assur;
   const fraisProf=(impIR<78000/12)?impIR*0.35:Math.min(impIR*0.25,35000/12);
   const netImp=impIR-cotSal-fraisProf;
   const rate=irRate(netImp);
@@ -1762,7 +1772,7 @@ function simBulletin(base, p){
   const net=brut-cotSal-ir;
   const pCnss=Math.min(impCNSS,PLAFOND_CNSS)*P_CNSS, pAlloc=impCNSS*P_ALLOC, pForm=impCNSS*P_FORM, pAmo=impCNSS*P_AMO;
   const patronal=pCnss+pAlloc+pForm+pAmo;
-  return {base, brut, cnss, amo, cotSal, ir, net, netImp, rate, panier:p.panier||0, transport:p.transport||0, patronal, cout:brut+patronal};
+  return {base, brut, cnss, amo, cimr, assur, rep, cotSal, ir, net, netImp, rate, panier:p.panier||0, transport:p.transport||0, patronal, cout:brut+patronal};
 }
 function simSolveBase(targetNet, p){
   let lo=0, hi=1000000;
@@ -1775,7 +1785,10 @@ function simReadOpts(){
     transport:parseFloat(document.getElementById('sim_transport').value)||0,
     imp:parseFloat(document.getElementById('sim_imp').value)||0,
     dep:parseInt(document.getElementById('sim_dep').value)||0,
-    rep:document.getElementById('sim_rep').value==='oui'
+    rep:document.getElementById('sim_rep').value==='oui',
+    repTaux:(parseFloat(document.getElementById('sim_repTaux').value)||0)/100,
+    cimr:(parseFloat(document.getElementById('sim_cimr').value)||0)/100,
+    assur:(parseFloat(document.getElementById('sim_assur').value)||0)/100
   };
 }
 function openSim(){
@@ -1785,6 +1798,9 @@ function openSim(){
   document.getElementById('sim_dep').value=0;
   document.getElementById('sim_imp').value=0;
   document.getElementById('sim_rep').value='non';
+  document.getElementById('sim_repTaux').value=10;
+  document.getElementById('sim_cimr').value=3;
+  document.getElementById('sim_assur').value=1.48;
   simCalc();
   document.getElementById('simModal').classList.add('show');
 }
@@ -1800,8 +1816,11 @@ function simCalc(){
     <tr class="big"><td>Salaire de base</td><td>${fmtNum(b.base)} DH</td></tr>
     <tr><td>Panier + transport (non imposables)</td><td>${fmtNum(b.panier+b.transport)} DH</td></tr>
     <tr class="big"><td>Salaire brut</td><td>${fmtNum(b.brut)} DH</td></tr>
+    ${b.rep>0?`<tr><td>dont indemnité de représentation</td><td>${fmtNum(b.rep)} DH</td></tr>`:''}
     <tr><td>CNSS (4,48 %)</td><td>− ${fmtNum(b.cnss)} DH</td></tr>
     <tr><td>AMO (2,26 %)</td><td>− ${fmtNum(b.amo)} DH</td></tr>
+    ${b.cimr>0?`<tr><td>CIMR</td><td>− ${fmtNum(b.cimr)} DH</td></tr>`:''}
+    ${b.assur>0?`<tr><td>Assurance maladie</td><td>− ${fmtNum(b.assur)} DH</td></tr>`:''}
     <tr><td>IR (impôt sur le revenu)</td><td>− ${fmtNum(b.ir)} DH</td></tr>
     <tr class="big ok"><td>Salaire net</td><td>${fmtNum(b.net)} DH</td></tr>
     <tr class="sep"><td>Charges patronales</td><td>${fmtNum(b.patronal)} DH</td></tr>

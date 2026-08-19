@@ -150,41 +150,29 @@
 <body>
 
 <!-- ===== ECRAN PIN ===== -->
-<div id="pinScreen" style="position:fixed;inset:0;background:#eef6f6;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px">
-  <div style="background:#fff;border-radius:16px;border:1px solid #d9e8e7;padding:36px 44px;text-align:center;max-width:400px;width:92%">
-    <div style="font-size:28px;margin-bottom:8px">🔐</div>
-    <h2 style="margin:0 0 4px;font-size:18px;color:#0f7c74;font-weight:600">Smart RH</h2>
-    <p style="margin:0 0 20px;font-size:13px;color:#7d949a">Sélectionnez votre nom puis entrez votre PIN</p>
-
-    <!-- Étape 1 : choisir le nom -->
-    <div id="pinStep1">
-      <div id="pinUserList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:280px;overflow-y:auto"></div>
+<div id="pinScreen" style="position:fixed;inset:0;background:#eef6f6;z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;border:1px solid #d9e8e7;padding:40px 44px;text-align:center;max-width:380px;width:92%;box-shadow:0 8px 32px rgba(0,0,0,.08)">
+    <div style="font-size:32px;margin-bottom:10px">🔐</div>
+    <h2 style="margin:0 0 4px;font-size:20px;color:#0f7c74;font-weight:700">Smart RH</h2>
+    <p style="margin:0 0 28px;font-size:13px;color:#7d949a">Connectez-vous pour accéder à votre espace</p>
+    <div style="text-align:left;margin-bottom:14px">
+      <label style="font-size:12px;font-weight:600;color:#7d949a;text-transform:uppercase;letter-spacing:.4px">Identifiant</label>
+      <input id="loginUser" type="text" placeholder="Votre identifiant" autocomplete="username"
+        style="width:100%;box-sizing:border-box;margin-top:5px;padding:11px 14px;border-radius:8px;border:1px solid #d9e8e7;font-size:14px;outline:none"
+        onfocus="this.style.borderColor='#22b8ad'" onblur="this.style.borderColor='#d9e8e7'"
+        onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
     </div>
-
-    <!-- Étape 2 : saisir le PIN -->
-    <div id="pinStep2" style="display:none">
-      <div id="pinSelectedName" style="font-size:15px;font-weight:600;color:#0f7c74;margin-bottom:16px"></div>
-      <div id="pinDots" style="display:flex;justify-content:center;gap:12px;margin-bottom:20px">
-        <div class="pdot"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto 14px">
-        <button class="pkb" onclick="pinKey('1')">1</button>
-        <button class="pkb" onclick="pinKey('2')">2</button>
-        <button class="pkb" onclick="pinKey('3')">3</button>
-        <button class="pkb" onclick="pinKey('4')">4</button>
-        <button class="pkb" onclick="pinKey('5')">5</button>
-        <button class="pkb" onclick="pinKey('6')">6</button>
-        <button class="pkb" onclick="pinKey('7')">7</button>
-        <button class="pkb" onclick="pinKey('8')">8</button>
-        <button class="pkb" onclick="pinKey('9')">9</button>
-        <button class="pkb" onclick="pinBack()" style="font-size:13px;color:#7d949a">← Retour</button>
-        <button class="pkb" onclick="pinKey('0')">0</button>
-        <button class="pkb" onclick="pinKey('OK')" style="background:#0f7c74;color:#fff">OK</button>
-      </div>
-      <button onclick="pinKey('C')" style="background:none;border:none;color:#e55;font-size:13px;cursor:pointer;margin-bottom:4px">⌫ Effacer</button>
+    <div style="text-align:left;margin-bottom:22px">
+      <label style="font-size:12px;font-weight:600;color:#7d949a;text-transform:uppercase;letter-spacing:.4px">Mot de passe</label>
+      <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password"
+        style="width:100%;box-sizing:border-box;margin-top:5px;padding:11px 14px;border-radius:8px;border:1px solid #d9e8e7;font-size:14px;outline:none"
+        onfocus="this.style.borderColor='#22b8ad'" onblur="this.style.borderColor='#d9e8e7'"
+        onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-
-    <div id="pinError" style="color:#e55;font-size:13px;min-height:18px;margin-top:6px"></div>
+    <button onclick="doLogin()" style="width:100%;padding:13px;border-radius:8px;border:none;background:#0f7c74;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:.15s" onmouseover="this.style.background='#0a5e58'" onmouseout="this.style.background='#0f7c74'">
+      Se connecter
+    </button>
+    <div id="loginError" style="color:#e55;font-size:13px;min-height:18px;margin-top:12px"></div>
   </div>
 </div>
 <style>
@@ -223,8 +211,12 @@
       <div id="adTab-add" style="display:none">
         <input type="hidden" id="adEditId">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-          <div><label class="adlbl">Prénom / Pseudo</label><input id="adNom" type="text" placeholder="Ex : Ilham" style="width:100%;box-sizing:border-box"></div>
-          <div><label class="adlbl">Code PIN (4 chiffres)</label><input id="adPin" type="password" maxlength="4" placeholder="••••" style="width:100%;box-sizing:border-box"></div>
+          <div><label class="adlbl">Prénom / Nom</label><input id="adNom" type="text" placeholder="Ex : Ilham Elanbi" style="width:100%;box-sizing:border-box"></div>
+          <div><label class="adlbl">Identifiant (login)</label><input id="adLogin" type="text" placeholder="Ex : ilham" style="width:100%;box-sizing:border-box"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div><label class="adlbl">Mot de passe</label><input id="adPin" type="password" placeholder="Laisser vide = inchangé" style="width:100%;box-sizing:border-box"></div>
+          <div><label class="adlbl">Confirmer mot de passe</label><input id="adPin2" type="password" placeholder="Confirmer" style="width:100%;box-sizing:border-box"></div>
         </div>
         <div style="margin-bottom:12px">
           <label class="adlbl">Sociétés autorisées</label>
@@ -251,8 +243,8 @@
       <!-- PIN admin -->
       <div id="adTab-pin" style="display:none">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-          <div><label class="adlbl">PIN actuel</label><input id="adPinOld" type="password" maxlength="4" placeholder="••••" style="width:100%;box-sizing:border-box"></div>
-          <div><label class="adlbl">Nouveau PIN</label><input id="adPinNew" type="password" maxlength="4" placeholder="••••" style="width:100%;box-sizing:border-box"></div>
+          <div><label class="adlbl">Mot de passe actuel</label><input id="adPinOld" type="password" placeholder="••••••" style="width:100%;box-sizing:border-box"></div>
+          <div><label class="adlbl">Nouveau mot de passe</label><input id="adPinNew" type="password" placeholder="••••••" style="width:100%;box-sizing:border-box"></div>
         </div>
         <button onclick="adChangePinAdmin()" class="btn-gold">Mettre à jour</button>
         <div id="adPinMsg" style="font-size:12px;margin-top:8px;min-height:16px"></div>
@@ -2345,23 +2337,23 @@ const AUTH_KEY  = 'srh_auth';
 const USERS_KEY = 'srh_users';
 
 const DEFAULT_USERS = [
-  { id:'admin',     nom:'Admin',          pin:'0000', isAdmin:true,
+  { id:'admin',     nom:'Admin',          login:'admin',    pin:'0000', isAdmin:true,
     societes:['c_protect','c_proprete','c_maint','c_emploi','c_maroc','c_pcs','c_fiber'],
     contrats:['t_cdi','t_cdd','t_projet','t_fiber','t_pcs2','t_pcs2_v2'],
     simulateur:true, import:true },
-  { id:'u_ilham',   nom:'Ilham Elanbi',   pin:'', isAdmin:false,
+  { id:'u_ilham',   nom:'Ilham Elanbi',   login:'ilham',    pin:'', isAdmin:false,
     societes:['c_pcs','c_fiber'],
     contrats:['t_cdi','t_projet','t_pcs2_v2'],
     simulateur:true, import:true },
-  { id:'u_amina',   nom:'Amina Yahyaoui', pin:'', isAdmin:false,
+  { id:'u_amina',   nom:'Amina Yahyaoui', login:'amina',    pin:'', isAdmin:false,
     societes:['c_maint'],
     contrats:['t_cdi','t_projet'],
     simulateur:true, import:true },
-  { id:'u_nora',    nom:'Nora Bennani',   pin:'', isAdmin:false,
+  { id:'u_nora',    nom:'Nora Bennani',   login:'nora',     pin:'', isAdmin:false,
     societes:['c_protect'],
     contrats:['t_cdi','t_cdd'],
     simulateur:true, import:true },
-  { id:'u_oumaima', nom:'Oumaima Achami', pin:'', isAdmin:false,
+  { id:'u_oumaima', nom:'Oumaima Achami', login:'oumaima',  pin:'', isAdmin:false,
     societes:['c_proprete'],
     contrats:['t_cdi','t_cdd'],
     simulateur:true, import:true }
@@ -2374,67 +2366,34 @@ function setCurrentUser(u){ try{ sessionStorage.setItem(AUTH_KEY,JSON.stringify(
 
 function pinShow(){
   document.getElementById('pinScreen').style.display='flex';
-  renderPinUserList();
-  showPinStep(1);
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginError').textContent='';
+  setTimeout(()=>document.getElementById('loginUser').focus(),100);
 }
 function pinHide(){ document.getElementById('pinScreen').style.display='none'; }
 
-let pinBuffer='';
-let pinSelectedUser=null;
-
-function renderPinUserList(){
-  const users=loadUsers().filter(u=>u.pin);
-  document.getElementById('pinUserList').innerHTML=users.map(u=>`
-    <button onclick="pinSelectUser('${u.id}')" style="width:100%;padding:12px 16px;border-radius:10px;border:1px solid #d9e8e7;background:#f5fafa;font-size:14px;font-weight:600;color:#26383b;cursor:pointer;text-align:left;transition:.1s" onmouseover="this.style.background='#e6f4f3'" onmouseout="this.style.background='#f5fafa'">
-      👤 ${u.nom}
-    </button>`).join('');
-}
-
-function pinSelectUser(id){
+function doLogin(){
+  const login=document.getElementById('loginUser').value.trim().toLowerCase();
+  const pass=document.getElementById('loginPass').value;
+  const err=document.getElementById('loginError');
+  if(!login||!pass){ err.textContent='Remplissez les deux champs.'; return; }
   const users=loadUsers();
-  pinSelectedUser=users.find(u=>u.id===id);
-  if(!pinSelectedUser) return;
-  document.getElementById('pinSelectedName').textContent='Bonjour, '+pinSelectedUser.nom+' 👋';
-  pinBuffer=''; updateDots();
-  document.getElementById('pinError').textContent='';
-  showPinStep(2);
-}
-
-function showPinStep(n){
-  document.getElementById('pinStep1').style.display=n===1?'':'none';
-  document.getElementById('pinStep2').style.display=n===2?'':'none';
-}
-
-function pinBack(){
-  pinBuffer=''; pinSelectedUser=null;
-  document.getElementById('pinError').textContent='';
-  showPinStep(1);
-}
-
-function updateDots(){
-  document.querySelectorAll('.pdot').forEach((d,i)=>d.classList.toggle('filled',i<pinBuffer.length));
-}
-
-function pinKey(k){
-  const err=document.getElementById('pinError');
-  err.textContent='';
-  if(k==='C'){ pinBuffer=pinBuffer.slice(0,-1); updateDots(); return; }
-  if(k==='OK'){ checkPin(); return; }
-  if(pinBuffer.length<4){ pinBuffer+=k; updateDots(); }
-  if(pinBuffer.length===4) checkPin();
-}
-
-function checkPin(){
-  if(!pinSelectedUser){ document.getElementById('pinError').textContent='Sélectionnez votre nom.'; return; }
-  if(pinBuffer===pinSelectedUser.pin){
-    setCurrentUser(pinSelectedUser);
-    pinBuffer=''; updateDots(); pinSelectedUser=null;
+  const u=users.find(x=>x.login&&x.login.toLowerCase()===login && x.pin===pass);
+  if(u){
+    setCurrentUser(u);
     pinHide();
-    applyProfile(getCurrentUser());
+    applyProfile(u);
   } else {
-    document.getElementById('pinError').textContent='Code incorrect';
-    pinBuffer=''; updateDots();
+    err.textContent='Identifiant ou mot de passe incorrect.';
+    document.getElementById('loginPass').value='';
+    document.getElementById('loginPass').focus();
   }
+}
+
+function doLogout(){
+  sessionStorage.removeItem(AUTH_KEY);
+  pinShow();
 }
 
 /* --- Appliquer le profil utilisateur --- */
@@ -2487,7 +2446,9 @@ function adTab(name,el){
   if(name==='add'){
     document.getElementById('adEditId').value='';
     document.getElementById('adNom').value='';
+    document.getElementById('adLogin').value='';
     document.getElementById('adPin').value='';
+    document.getElementById('adPin2').value='';
     document.getElementById('adSimulateur').checked=true;
     document.getElementById('adImport').checked=true;
     document.getElementById('adFormErr').textContent='';
@@ -2526,7 +2487,9 @@ function adEditUser(id){
   const u=loadUsers().find(x=>x.id===id); if(!u) return;
   document.getElementById('adEditId').value=u.id;
   document.getElementById('adNom').value=u.nom;
+  document.getElementById('adLogin').value=u.login||'';
   document.getElementById('adPin').value='';
+  document.getElementById('adPin2').value='';
   document.getElementById('adSimulateur').checked=!!u.simulateur;
   document.getElementById('adImport').checked=!!u.import;
   renderAdCheckboxes(u.societes,u.contrats);
@@ -2536,24 +2499,32 @@ function adEditUser(id){
 function adSaveUser(){
   const err=document.getElementById('adFormErr');
   const nom=document.getElementById('adNom').value.trim();
-  const pin=document.getElementById('adPin').value.trim();
+  const login=document.getElementById('adLogin').value.trim().toLowerCase();
+  const pass=document.getElementById('adPin').value;
+  const pass2=document.getElementById('adPin2').value;
   const editId=document.getElementById('adEditId').value;
   const soc=[...document.querySelectorAll('input[name="adSoc"]:checked')].map(x=>x.value);
   const cont=[...document.querySelectorAll('input[name="adCont"]:checked')].map(x=>x.value);
   const sim=document.getElementById('adSimulateur').checked;
   const imp=document.getElementById('adImport').checked;
-  if(!nom){ err.textContent='Le prénom est requis.'; return; }
-  if(!editId && !/^\d{4}$/.test(pin)){ err.textContent='PIN de 4 chiffres requis.'; return; }
-  if(pin && !/^\d{4}$/.test(pin)){ err.textContent='PIN invalide (4 chiffres).'; return; }
+  if(!nom){ err.textContent='Le nom est requis.'; return; }
+  if(!login){ err.textContent='L\'identifiant est requis.'; return; }
+  if(!editId && !pass){ err.textContent='Le mot de passe est requis.'; return; }
+  if(pass && pass!==pass2){ err.textContent='Les mots de passe ne correspondent pas.'; return; }
   if(!soc.length){ err.textContent='Choisissez au moins une société.'; return; }
   if(!cont.length){ err.textContent='Choisissez au moins un modèle.'; return; }
   const users=loadUsers();
   if(editId){
     const i=users.findIndex(u=>u.id===editId);
-    if(i>=0){ users[i].nom=nom; if(pin) users[i].pin=pin; users[i].societes=soc; users[i].contrats=cont; users[i].simulateur=sim; users[i].import=imp; }
+    if(i>=0){
+      users[i].nom=nom; users[i].login=login;
+      if(pass) users[i].pin=pass;
+      users[i].societes=soc; users[i].contrats=cont;
+      users[i].simulateur=sim; users[i].import=imp;
+    }
   } else {
-    if(users.find(u=>u.pin===pin)){ err.textContent='Ce PIN est déjà utilisé.'; return; }
-    users.push({id:'u_'+Date.now(),nom,pin,isAdmin:false,societes:soc,contrats:cont,simulateur:sim,import:imp});
+    if(users.find(u=>u.login&&u.login.toLowerCase()===login)){ err.textContent='Cet identifiant est déjà utilisé.'; return; }
+    users.push({id:'u_'+Date.now(),nom,login,pin:pass,isAdmin:false,societes:soc,contrats:cont,simulateur:sim,import:imp});
   }
   saveUsers(users);
   adTab('list',document.querySelector('.adtab'));
@@ -2574,8 +2545,8 @@ function adChangePinAdmin(){
   const users=loadUsers();
   const admin=users.find(u=>u.isAdmin);
   if(!admin){ msg.style.color='#c00'; msg.textContent='Admin introuvable.'; return; }
-  if(oldP!==admin.pin){ msg.style.color='#c00'; msg.textContent='PIN actuel incorrect.'; return; }
-  if(!/^\d{4}$/.test(newP)){ msg.style.color='#c00'; msg.textContent='Nouveau PIN invalide.'; return; }
+  if(oldP!==admin.pin){ msg.style.color='#c00'; msg.textContent='Mot de passe actuel incorrect.'; return; }
+  if(!newP){ msg.style.color='#c00'; msg.textContent='Nouveau mot de passe requis.'; return; }
   admin.pin=newP; saveUsers(users);
   const cur=getCurrentUser(); if(cur&&cur.isAdmin){ cur.pin=newP; setCurrentUser(cur); }
   msg.style.color='#0f7c74'; msg.textContent='PIN mis à jour ✓';

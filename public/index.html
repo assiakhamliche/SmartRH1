@@ -300,6 +300,7 @@
     </div>
     <button class="btn-ghost no-print" onclick="newContract()">Nouveau contrat</button>
     <button id="btnAdmin" class="btn-ghost no-print" onclick="openAdmin()" style="display:none">⚙ Admin</button>
+    <button class="btn-ghost no-print" onclick="openChangePass()" title="Changer mon mot de passe" style="padding:8px 12px;font-size:13px">🔑 Mot de passe</button>
     <button class="btn-ghost no-print" onclick="doLogout()" title="Se déconnecter" style="padding:8px 10px">🔒</button>
     <div class="print-menu no-print">
       <button class="btn-gold" onclick="togglePrintMenu(event)">Imprimer / Envoyer ▾</button>
@@ -2329,9 +2330,75 @@ document.addEventListener('click', ()=>{ document.querySelectorAll('.print-pop.s
 renderCompanySelect();
 renderForm();
 </script>
+<!-- ===== MODALE CHANGEMENT MOT DE PASSE ===== -->
+<div id="changePassModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9500;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:14px;border:1px solid #d9e8e7;width:360px;max-width:95vw;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:28px 32px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-size:16px;font-weight:700;color:#0f7c74">🔑 Changer mon mot de passe</div>
+      <button onclick="closeChangePass()" style="background:none;border:none;font-size:20px;color:#7d949a;cursor:pointer">✕</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:#7d949a;text-transform:uppercase;letter-spacing:.4px">Mot de passe actuel</label>
+      <input id="cpOld" type="password" placeholder="••••••••" style="width:100%;box-sizing:border-box;margin-top:5px;padding:10px 13px;border-radius:8px;border:1px solid #d9e8e7;font-size:14px;outline:none"
+        onfocus="this.style.borderColor='#22b8ad'" onblur="this.style.borderColor='#d9e8e7'">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:#7d949a;text-transform:uppercase;letter-spacing:.4px">Nouveau mot de passe</label>
+      <input id="cpNew" type="password" placeholder="••••••••" style="width:100%;box-sizing:border-box;margin-top:5px;padding:10px 13px;border-radius:8px;border:1px solid #d9e8e7;font-size:14px;outline:none"
+        onfocus="this.style.borderColor='#22b8ad'" onblur="this.style.borderColor='#d9e8e7'">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;font-weight:600;color:#7d949a;text-transform:uppercase;letter-spacing:.4px">Confirmer le nouveau mot de passe</label>
+      <input id="cpNew2" type="password" placeholder="••••••••" style="width:100%;box-sizing:border-box;margin-top:5px;padding:10px 13px;border-radius:8px;border:1px solid #d9e8e7;font-size:14px;outline:none"
+        onfocus="this.style.borderColor='#22b8ad'" onblur="this.style.borderColor='#d9e8e7'"
+        onkeydown="if(event.key==='Enter')saveChangePass()">
+    </div>
+    <button onclick="saveChangePass()" style="width:100%;padding:12px;border-radius:8px;border:none;background:#0f7c74;color:#fff;font-size:14px;font-weight:700;cursor:pointer">
+      Enregistrer
+    </button>
+    <div id="cpMsg" style="font-size:13px;min-height:18px;margin-top:10px;text-align:center"></div>
+  </div>
+</div>
+
 <script>
-/* ============================================================
-   SMART RH — Auth PIN + Admin  (version robuste)
+function openChangePass(){
+  document.getElementById('cpOld').value='';
+  document.getElementById('cpNew').value='';
+  document.getElementById('cpNew2').value='';
+  document.getElementById('cpMsg').textContent='';
+  document.getElementById('changePassModal').style.display='flex';
+  setTimeout(()=>document.getElementById('cpOld').focus(),100);
+}
+function closeChangePass(){ document.getElementById('changePassModal').style.display='none'; }
+
+function saveChangePass(){
+  const msg=document.getElementById('cpMsg');
+  const oldP=document.getElementById('cpOld').value;
+  const newP=document.getElementById('cpNew').value;
+  const newP2=document.getElementById('cpNew2').value;
+  const cur=getCurrentUser();
+  if(!cur){ msg.style.color='#e55'; msg.textContent='Session expirée.'; return; }
+  if(!oldP){ msg.style.color='#e55'; msg.textContent='Saisissez votre mot de passe actuel.'; return; }
+  if(oldP!==cur.pin){ msg.style.color='#e55'; msg.textContent='Mot de passe actuel incorrect.'; return; }
+  if(!newP){ msg.style.color='#e55'; msg.textContent='Saisissez un nouveau mot de passe.'; return; }
+  if(newP!==newP2){ msg.style.color='#e55'; msg.textContent='Les mots de passe ne correspondent pas.'; return; }
+  if(newP===oldP){ msg.style.color='#e55'; msg.textContent='Le nouveau mot de passe doit être différent.'; return; }
+  /* Mettre à jour dans le stockage */
+  const users=loadUsers();
+  const i=users.findIndex(u=>u.id===cur.id);
+  if(i>=0) users[i].pin=newP;
+  saveUsers(users);
+  /* Mettre à jour la session */
+  cur.pin=newP; setCurrentUser(cur);
+  msg.style.color='#0f7c74'; msg.textContent='✓ Mot de passe modifié avec succès !';
+  document.getElementById('cpOld').value='';
+  document.getElementById('cpNew').value='';
+  document.getElementById('cpNew2').value='';
+  setTimeout(closeChangePass, 1800);
+}
+</script>
+
+<script>
    ============================================================ */
 const AUTH_KEY  = 'srh_auth';
 const USERS_KEY = 'srh_users';

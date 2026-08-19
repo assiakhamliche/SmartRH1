@@ -2454,12 +2454,12 @@ function pinShow(){
 function pinHide(){ document.getElementById('pinScreen').style.display='none'; }
 
 function doLogin(){
-  const login=document.getElementById('loginUser').value.trim().toLowerCase();
+  const login=document.getElementById('loginUser').value.trim().toLowerCase().replace(/\s+/g,'');
   const pass=document.getElementById('loginPass').value;
   const err=document.getElementById('loginError');
   if(!login||!pass){ err.textContent='Remplissez les deux champs.'; return; }
   const users=loadUsers();
-  const u=users.find(x=>x.login&&x.login.toLowerCase()===login && x.pin===pass);
+  const u=users.find(x=>x.login && x.login.toLowerCase().replace(/\s+/g,'')=== login && x.pin===pass);
   if(u){
     setCurrentUser(u);
     pinHide();
@@ -2545,6 +2545,7 @@ function renderAdUserList(){
       <div class="ad-avatar">${ini(u.nom)}</div>
       <div style="flex:1;min-width:0">
         <div style="font-size:14px;font-weight:600;color:#26383b">${u.nom}${u.isAdmin?' <span style="font-size:11px;color:#0f7c74">(Admin)</span>':''}</div>
+        <div style="font-size:12px;color:#7d949a;margin-top:2px">🔑 Identifiant : <b style="color:#0f7c74;font-family:monospace">${u.login||'—'}</b></div>
         <div style="margin-top:3px;line-height:2">
           ${u.societes.map(s=>`<span class="ad-badge">${DEFAULT_COMPANIES.find(c=>c.id===s)?.nom||s}</span>`).join('')}
           ${u.contrats.map(t=>`<span class="ad-badge ad-badge-gray">${DEFAULT_TEMPLATES.find(x=>x.id===t)?.nom||t}</span>`).join('')}

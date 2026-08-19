@@ -198,7 +198,7 @@
       <!-- Onglets -->
       <div id="adTabs" style="display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid #d9e8e7">
         <button class="adtab active" onclick="adTab('list',this)">Utilisateurs</button>
-        <button class="adtab" onclick="adTab('add',this)">+ Ajouter</button>
+        <button class="adtab" onclick="adNewUser()">+ Ajouter</button>
         <button class="adtab" onclick="adTab('pin',this)">PIN admin</button>
       </div>
 
@@ -2520,11 +2520,11 @@ function openAdmin(){
 }
 function closeAdmin(){ document.getElementById('adminPanel').style.display='none'; }
 
-function adTab(name,el){
+function adTab(name, el, skipReset){
   ['list','add','pin'].forEach(t=>{ document.getElementById('adTab-'+t).style.display=t===name?'':'none'; });
   document.querySelectorAll('.adtab').forEach(t=>t.classList.remove('active'));
   if(el) el.classList.add('active');
-  if(name==='add'){
+  if(name==='add' && !skipReset){
     document.getElementById('adEditId').value='';
     document.getElementById('adNom').value='';
     document.getElementById('adLogin').value='';
@@ -2535,6 +2535,10 @@ function adTab(name,el){
     document.getElementById('adFormErr').textContent='';
     renderAdCheckboxes([],[]);
   }
+}
+
+function adNewUser(){
+  adTab('add', document.querySelectorAll('.adtab')[1], false);
 }
 
 function renderAdUserList(){
@@ -2567,6 +2571,9 @@ function renderAdCheckboxes(selSoc,selCont){
 
 function adEditUser(id){
   const u=loadUsers().find(x=>x.id===id); if(!u) return;
+  // Ouvrir l'onglet sans reset
+  adTab('add', document.querySelectorAll('.adtab')[1], true);
+  // Remplir le formulaire
   document.getElementById('adEditId').value=u.id;
   document.getElementById('adNom').value=u.nom;
   document.getElementById('adLogin').value=u.login||'';
@@ -2574,8 +2581,8 @@ function adEditUser(id){
   document.getElementById('adPin2').value='';
   document.getElementById('adSimulateur').checked=!!u.simulateur;
   document.getElementById('adImport').checked=!!u.import;
-  renderAdCheckboxes(u.societes,u.contrats);
-  adTab('add',document.querySelectorAll('.adtab')[1]);
+  document.getElementById('adFormErr').textContent='';
+  renderAdCheckboxes(u.societes, u.contrats);
 }
 
 function adSaveUser(){
@@ -2609,7 +2616,7 @@ function adSaveUser(){
     users.push({id:'u_'+Date.now(),nom,login,pin:pass,isAdmin:false,societes:soc,contrats:cont,simulateur:sim,import:imp});
   }
   saveUsers(users);
-  adTab('list',document.querySelector('.adtab'));
+  adTab('list', document.querySelector('.adtab'), false);
   renderAdUserList();
   err.textContent='';
 }

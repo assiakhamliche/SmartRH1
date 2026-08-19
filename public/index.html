@@ -2635,7 +2635,6 @@ async function adEditUser(id){
 
 async function adSaveUser(){
   const err=document.getElementById('adFormErr');
-  let users = await loadUsers(); users = [...users];
   const nom=document.getElementById('adNom').value.trim();
   const login=document.getElementById('adLogin').value.trim().toLowerCase();
   const pass=document.getElementById('adPin').value;

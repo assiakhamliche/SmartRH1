@@ -2460,15 +2460,20 @@ let _usersCache = null;
 
 async function loadUsers(){
   if(_usersCache) return _usersCache;
+  // Essayer de charger users.json avec timeout 2s
   try {
-    const r = await fetch(USERS_URL + '?v=' + Date.now());
-    if(r.ok){ _usersCache = await r.json(); return _usersCache; }
+    const controller = new AbortController();
+    const timer = setTimeout(()=>controller.abort(), 2000);
+    const r = await fetch(USERS_URL + '?v=' + Date.now(), {signal: controller.signal});
+    clearTimeout(timer);
+    if(r.ok){
+      const data = await r.json();
+      if(Array.isArray(data) && data.length > 0){
+        _usersCache = data; return _usersCache;
+      }
+    }
   } catch(e){}
-  // Fallback : localStorage puis code embarqué
-  try {
-    const d = localStorage.getItem(USERS_KEY);
-    if(d){ _usersCache = JSON.parse(d); return _usersCache; }
-  } catch(e){}
+  // Fallback immédiat : BUILTIN_USERS (mots de passe dans le code)
   _usersCache = BUILTIN_USERS;
   return _usersCache;
 }

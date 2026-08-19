@@ -270,6 +270,7 @@
 </style>
 
   <h1>Générateur de Contrats</h1>
+  <span id="userBadge" style="display:none;background:#e1f5ee;color:#0f7c74;border:1px solid #9fe1cb;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600">👤 <span id="userBadgeName"></span></span>
   <div class="toolbar">
     <div class="print-menu no-print">
       <button class="btn-ghost tb-btn" onclick="togglePop('companyPop',event)">Société : <b id="companyCur"></b> ▾</button>
@@ -2483,6 +2484,12 @@ function applyProfile(u){
   if(!companies.find(c=>c.id===selCompanyId)) selCompanyId=companies[0].id;
   if(!templates.find(t=>t.id===selTplId))     selTplId=templates[0].id;
 
+  /* Afficher le nom utilisateur */
+  const badge=document.getElementById('userBadge');
+  const badgeName=document.getElementById('userBadgeName');
+  if(badge){ badge.style.display=''; }
+  if(badgeName){ badgeName.textContent=u.nom; }
+
   /* Simulateur */
   document.querySelectorAll('[onclick*="simModal"],[onclick*="openSim"]').forEach(b=>b.style.display=u.simulateur?'':'none');
   /* Import Excel */
@@ -2491,9 +2498,9 @@ function applyProfile(u){
   const ba=document.getElementById('btnAdmin');
   if(ba) ba.style.display=u.isAdmin?'':'none';
 
-  /* Rafraîchir l'UI */
-  if(typeof renderUI==='function') renderUI();
-  else if(typeof renderPreview==='function') renderPreview();
+  /* Forcer le re-render des dropdowns */
+  if(typeof renderCompanySelect==='function') renderCompanySelect();
+  if(typeof renderForm==='function') renderForm();
 }
 
 function doLogout(){
@@ -2633,8 +2640,13 @@ function adReset(){
 /* --- Init au chargement --- */
 window.addEventListener('load', function(){
   const u = getCurrentUser();
-  if(u){ pinHide(); applyProfile(u); }
-  else { pinShow(); }
+  if(u){
+    pinHide();
+    // Attendre que renderCompanySelect soit appelé par l'app, puis écraser
+    setTimeout(()=>applyProfile(u), 50);
+  } else {
+    pinShow();
+  }
 });
 
 /* Touche Entrée sur le formulaire de connexion */

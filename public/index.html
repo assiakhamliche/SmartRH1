@@ -2489,8 +2489,6 @@ function applyProfile(u){
 
 function doLogout(){
   sessionStorage.removeItem(AUTH_KEY);
-  pinBuffer=''; updateDots();
-  document.getElementById('pinError').textContent='';
   pinShow();
 }
 
@@ -2624,18 +2622,17 @@ function adReset(){
 }
 
 /* --- Init au chargement --- */
-(function init(){
-  const u=getCurrentUser();
+window.addEventListener('load', function(){
+  const u = getCurrentUser();
   if(u){ pinHide(); applyProfile(u); }
-  else  { pinShow(); }
-})();
+  else { pinShow(); }
+});
 
-/* Keyboard PIN */
-document.addEventListener('keydown',function(e){
-  if(document.getElementById('pinScreen').style.display==='none') return;
-  if(e.key>='0'&&e.key<='9') pinKey(e.key);
-  else if(e.key==='Backspace') pinKey('C');
-  else if(e.key==='Enter') pinKey('OK');
+/* Touche Entrée sur le formulaire de connexion */
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Enter' && document.getElementById('pinScreen').style.display !== 'none'){
+    doLogin();
+  }
 });
 </script>
 </body>

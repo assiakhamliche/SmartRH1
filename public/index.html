@@ -249,6 +249,9 @@
         <button onclick="adChangePinAdmin()" class="btn-gold">Mettre à jour</button>
         <div id="adPinMsg" style="font-size:12px;margin-top:8px;min-height:16px"></div>
         <hr style="margin:24px 0;border:none;border-top:1px solid #d9e8e7">
+        <p style="font-size:13px;color:#7d949a;margin:0 0 8px"><b>Exporter la liste des utilisateurs</b><br>Pour appliquer les changements sur tous les appareils.</p>
+        <button onclick="loadUsers().then(showExportPrompt)" style="width:100%;padding:10px;border-radius:8px;border:1px solid #9fe1cb;background:#e1f5ee;color:#0f7c74;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:16px">📋 Générer users.json</button>
+        <hr style="margin:0 0 16px;border:none;border-top:1px solid #d9e8e7">
         <p style="font-size:13px;color:#7d949a;margin:0 0 12px">Réinitialiser tous les utilisateurs (remet les profils par défaut).</p>
         <button onclick="adReset()" style="background:#fff0f0;color:#c00;border:1px solid #f5c6c6;border-radius:6px;padding:8px 18px;cursor:pointer;font-size:13px">Réinitialiser tout</button>
       </div>
@@ -2371,6 +2374,31 @@ renderForm();
   </div>
 </div>
 
+<!-- ===== MODALE EXPORT USERS.JSON ===== -->
+<div id="exportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9800;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:14px;width:520px;max-width:95vw;max-height:85vh;overflow-y:auto;padding:28px 32px;box-shadow:0 12px 40px rgba(0,0,0,.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#0f7c74">📋 Mettre à jour users.json</div>
+        <div style="font-size:12px;color:#7d949a;margin-top:2px">Copiez ce contenu dans le fichier <b>users.json</b> sur GitHub</div>
+      </div>
+      <button onclick="document.getElementById('exportModal').style.display='none'" style="background:none;border:none;font-size:20px;color:#7d949a;cursor:pointer">✕</button>
+    </div>
+    <textarea id="exportJson" readonly style="width:100%;box-sizing:border-box;height:260px;font-family:monospace;font-size:12px;border:1px solid #d9e8e7;border-radius:8px;padding:10px;resize:none;background:#f8fffe"></textarea>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="navigator.clipboard.writeText(document.getElementById('exportJson').value).then(()=>alert('✓ Copié !'))" style="flex:1;padding:11px;border-radius:8px;border:none;background:#0f7c74;color:#fff;font-size:14px;font-weight:700;cursor:pointer">📋 Copier</button>
+      <button onclick="document.getElementById('exportModal').style.display='none'" style="padding:11px 20px;border-radius:8px;border:1px solid #d9e8e7;background:#f5fafa;font-size:14px;cursor:pointer">Fermer</button>
+    </div>
+    <div style="margin-top:14px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:12px;font-size:12px;color:#5a4a00">
+      <b>📌 Comment faire :</b><br>
+      1. Cliquez <b>Copier</b><br>
+      2. Allez sur <b>GitHub → votre repo → fichier users.json</b><br>
+      3. Cliquez l'icône ✏️ (modifier) → collez → <b>Commit changes</b><br>
+      4. Vercel redéploie automatiquement en 1 minute
+    </div>
+  </div>
+</div>
+
 <script>
 function openChangePass(){
   document.getElementById('cpOld').value='';
@@ -2382,7 +2410,7 @@ function openChangePass(){
 }
 function closeChangePass(){ document.getElementById('changePassModal').style.display='none'; }
 
-function saveChangePass(){
+async function saveChangePass(){
   const msg=document.getElementById('cpMsg');
   const oldP=document.getElementById('cpOld').value;
   const newP=document.getElementById('cpNew').value;
@@ -2395,10 +2423,11 @@ function saveChangePass(){
   if(newP!==newP2){ msg.style.color='#e55'; msg.textContent='Les mots de passe ne correspondent pas.'; return; }
   if(newP===oldP){ msg.style.color='#e55'; msg.textContent='Le nouveau mot de passe doit être différent.'; return; }
   /* Mettre à jour dans le stockage */
-  const users=loadUsers();
+  const users=await loadUsers();
   const i=users.findIndex(u=>u.id===cur.id);
   if(i>=0) users[i].pin=newP;
-  saveUsers(users);
+  saveUsersLocal(users);
+  showExportPrompt(users);
   /* Mettre à jour la session */
   cur.pin=newP; setCurrentUser(cur);
   msg.style.color='#0f7c74'; msg.textContent='✓ Mot de passe modifié avec succès !';
@@ -2414,33 +2443,46 @@ function saveChangePass(){
    SMART RH — Auth Login/Password + Admin
    ============================================================ */
 const AUTH_KEY  = 'srh_auth';
-const USERS_KEY = 'srh_users';
+const USERS_KEY = 'srh_users_cache';
+const USERS_URL = './users.json';
 
-const DEFAULT_USERS = [
-  { id:'admin',     nom:'Admin',          login:'admin',    pin:'0000', isAdmin:true,
-    societes:['c_protect','c_proprete','c_maint','c_emploi','c_maroc','c_pcs','c_fiber'],
-    contrats:['t_cdi','t_cdd','t_projet','t_fiber','t_pcs2','t_pcs2_v2'],
-    simulateur:true, import:true },
-  { id:'u_ilham',   nom:'Ilham Elanbi',   login:'ilham',    pin:'', isAdmin:false,
-    societes:['c_pcs','c_fiber'],
-    contrats:['t_cdi','t_projet','t_pcs2_v2'],
-    simulateur:true, import:true },
-  { id:'u_amina',   nom:'Amina Yahyaoui', login:'amina',    pin:'', isAdmin:false,
-    societes:['c_maint'],
-    contrats:['t_cdi','t_projet'],
-    simulateur:true, import:true },
-  { id:'u_nora',    nom:'Nora Bennani',   login:'nora',     pin:'', isAdmin:false,
-    societes:['c_protect'],
-    contrats:['t_cdi','t_cdd'],
-    simulateur:true, import:true },
-  { id:'u_oumaima', nom:'Oumaima Achami', login:'oumaima',  pin:'', isAdmin:false,
-    societes:['c_proprete'],
-    contrats:['t_cdi','t_cdd'],
-    simulateur:true, import:true }
+// Utilisateurs embarqués dans le code (fallback si users.json inaccessible)
+const BUILTIN_USERS = [
+  { id:'admin',      nom:'Admin',            login:'admin',            pin:'0000', isAdmin:true,  societes:['c_protect','c_proprete','c_maint','c_emploi','c_maroc','c_pcs','c_fiber'], contrats:['t_cdi','t_cdd','t_projet','t_fiber','t_pcs2','t_pcs2_v2'], simulateur:true, import:true },
+  { id:'u_ilham',    nom:'Ilham Elanbi',     login:'ilham.elanbi',     pin:'1234', isAdmin:false, societes:['c_pcs','c_fiber'],     contrats:['t_cdi','t_projet','t_pcs2_v2'], simulateur:true, import:true },
+  { id:'u_amina',    nom:'Amina Elyahyaoui', login:'amina.elyahyaoui', pin:'2345', isAdmin:false, societes:['c_maint'],             contrats:['t_cdi','t_projet'],             simulateur:true, import:true },
+  { id:'u_nora',     nom:'Nora Bennani',     login:'nora.bennani',     pin:'3456', isAdmin:false, societes:['c_protect'],           contrats:['t_cdi','t_cdd'],                simulateur:true, import:true },
+  { id:'u_oumaima',  nom:'Oumaima Achami',   login:'oumaima.achami',   pin:'4567', isAdmin:false, societes:['c_proprete'],          contrats:['t_cdi','t_cdd'],                simulateur:true, import:true },
+  { id:'u_khaoula',  nom:'Khaoula El Jihad', login:'khaoula.eljihad',  pin:'5678', isAdmin:false, societes:['c_protect','c_proprete'], contrats:['t_cdi','t_cdd'],             simulateur:true, import:true }
 ];
 
-function loadUsers(){ try{ const d=localStorage.getItem(USERS_KEY); return d?JSON.parse(d):DEFAULT_USERS; }catch(e){ return DEFAULT_USERS; } }
-function saveUsers(u){ try{ localStorage.setItem(USERS_KEY,JSON.stringify(u)); }catch(e){} }
+let _usersCache = null;
+
+async function loadUsers(){
+  if(_usersCache) return _usersCache;
+  try {
+    const r = await fetch(USERS_URL + '?v=' + Date.now());
+    if(r.ok){ _usersCache = await r.json(); return _usersCache; }
+  } catch(e){}
+  // Fallback : localStorage puis code embarqué
+  try {
+    const d = localStorage.getItem(USERS_KEY);
+    if(d){ _usersCache = JSON.parse(d); return _usersCache; }
+  } catch(e){}
+  _usersCache = BUILTIN_USERS;
+  return _usersCache;
+}
+
+function saveUsersLocal(users){
+  // Sauvegarde locale (session courante) + invalide le cache
+  _usersCache = users;
+  try{ localStorage.setItem(USERS_KEY, JSON.stringify(users)); }catch(e){}
+}
+
+function generateUsersJson(users){
+  return JSON.stringify(users, null, 2);
+}
+
 function getCurrentUser(){ try{ const d=sessionStorage.getItem(AUTH_KEY); return d?JSON.parse(d):null; }catch(e){ return null; } }
 function setCurrentUser(u){ try{ sessionStorage.setItem(AUTH_KEY,JSON.stringify(u)); }catch(e){} }
 
@@ -2453,12 +2495,12 @@ function pinShow(){
 }
 function pinHide(){ document.getElementById('pinScreen').style.display='none'; }
 
-function doLogin(){
+async function doLogin(){
   const login=document.getElementById('loginUser').value.trim().toLowerCase().replace(/\s+/g,'');
   const pass=document.getElementById('loginPass').value;
   const err=document.getElementById('loginError');
   if(!login||!pass){ err.textContent='Remplissez les deux champs.'; return; }
-  const users=loadUsers();
+  const users = await loadUsers();
   const u=users.find(x=>x.login && x.login.toLowerCase().replace(/\s+/g,'')=== login && x.pin===pass);
   if(u){
     setCurrentUser(u);
@@ -2509,6 +2551,7 @@ function applyProfile(u){
 
 function doLogout(){
   sessionStorage.removeItem(AUTH_KEY);
+  _usersCache = null;
   pinShow();
 }
 
@@ -2541,8 +2584,8 @@ function adNewUser(){
   adTab('add', document.querySelectorAll('.adtab')[1], false);
 }
 
-function renderAdUserList(){
-  const users=loadUsers();
+async function renderAdUserList(){
+  const users=await loadUsers();
   const ini=n=>n.split(' ').map(x=>x[0]||'').join('').toUpperCase().slice(0,2);
   document.getElementById('adUserList').innerHTML=users.map(u=>`
     <div class="ad-user-row">
@@ -2569,8 +2612,8 @@ function renderAdCheckboxes(selSoc,selCont){
     <label class="adchk"><input type="checkbox" name="adCont" value="${t.id}" ${selCont.includes(t.id)?'checked':''}> ${t.nom}</label>`).join('');
 }
 
-function adEditUser(id){
-  const u=loadUsers().find(x=>x.id===id); if(!u) return;
+async function adEditUser(id){
+  const u=(await loadUsers()).find(x=>x.id===id); if(!u) return;
   // Ouvrir l'onglet sans reset
   adTab('add', document.querySelectorAll('.adtab')[1], true);
   // Remplir le formulaire
@@ -2585,8 +2628,9 @@ function adEditUser(id){
   renderAdCheckboxes(u.societes, u.contrats);
 }
 
-function adSaveUser(){
+async function adSaveUser(){
   const err=document.getElementById('adFormErr');
+  let users = await loadUsers(); users = [...users];
   const nom=document.getElementById('adNom').value.trim();
   const login=document.getElementById('adLogin').value.trim().toLowerCase();
   const pass=document.getElementById('adPin').value;
@@ -2602,7 +2646,7 @@ function adSaveUser(){
   if(pass && pass!==pass2){ err.textContent='Les mots de passe ne correspondent pas.'; return; }
   if(!soc.length){ err.textContent='Choisissez au moins une société.'; return; }
   if(!cont.length){ err.textContent='Choisissez au moins un modèle.'; return; }
-  const users=loadUsers();
+  const users = await loadUsers();
   if(editId){
     const i=users.findIndex(u=>u.id===editId);
     if(i>=0){
@@ -2615,42 +2659,53 @@ function adSaveUser(){
     if(users.find(u=>u.login&&u.login.toLowerCase()===login)){ err.textContent='Cet identifiant est déjà utilisé.'; return; }
     users.push({id:'u_'+Date.now(),nom,login,pin:pass,isAdmin:false,societes:soc,contrats:cont,simulateur:sim,import:imp});
   }
-  saveUsers(users);
+  saveUsersLocal(users);
+  showExportPrompt(users);
   adTab('list', document.querySelector('.adtab'), false);
   renderAdUserList();
   err.textContent='';
 }
 
-function adDeleteUser(id){
+async function adDeleteUser(id){
   if(!confirm('Supprimer cet utilisateur ?')) return;
-  saveUsers(loadUsers().filter(u=>u.id!==id));
+  const users = await loadUsers();
+  saveUsersLocal(users.filter(u=>u.id!==id));
+  showExportPrompt(users.filter(u=>u.id!==id));
   renderAdUserList();
 }
 
-function adChangePinAdmin(){
+async function adChangePinAdmin(){
   const msg=document.getElementById('adPinMsg');
   const oldP=document.getElementById('adPinOld').value.trim();
   const newP=document.getElementById('adPinNew').value.trim();
-  const users=loadUsers();
+  const users=await loadUsers();
   const admin=users.find(u=>u.isAdmin);
   if(!admin){ msg.style.color='#c00'; msg.textContent='Admin introuvable.'; return; }
   if(oldP!==admin.pin){ msg.style.color='#c00'; msg.textContent='Mot de passe actuel incorrect.'; return; }
   if(!newP){ msg.style.color='#c00'; msg.textContent='Nouveau mot de passe requis.'; return; }
-  admin.pin=newP; saveUsers(users);
+  admin.pin=newP; saveUsersLocal(users); showExportPrompt(users);
   const cur=getCurrentUser(); if(cur&&cur.isAdmin){ cur.pin=newP; setCurrentUser(cur); }
   msg.style.color='#0f7c74'; msg.textContent='PIN mis à jour ✓';
   document.getElementById('adPinOld').value='';
   document.getElementById('adPinNew').value='';
 }
 
+function showExportPrompt(users){
+  const json = JSON.stringify(users, null, 2);
+  const modal = document.getElementById('exportModal');
+  document.getElementById('exportJson').value = json;
+  modal.style.display = 'flex';
+}
+
 function adReset(){
   if(!confirm('Réinitialiser tous les utilisateurs ?')) return;
   localStorage.removeItem(USERS_KEY);
+  _usersCache = null;
   renderAdUserList();
 }
 
 /* --- Init au chargement --- */
-window.addEventListener('load', function(){
+window.addEventListener('load', async function(){
   const u = getCurrentUser();
   if(u){
     pinHide();

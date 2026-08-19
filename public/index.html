@@ -1447,27 +1447,31 @@ function load(key, fallback){
 }
 function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
 
-let companies = load('gc_companies', DEFAULT_COMPANIES);
-let templates = load('gc_templates', DEFAULT_TEMPLATES);
+let ALL_companies = load('gc_companies', DEFAULT_COMPANIES);
+let ALL_templates = load('gc_templates', DEFAULT_TEMPLATES);
+let companies = [...ALL_companies];
+let templates = [...ALL_templates];
 let formData  = load('gc_formdata', {});
 let selCompanyId = load('gc_selCompany', companies[0].id);
 let selTplId     = load('gc_selTpl', templates[0].id);
-let roster       = load('gc_roster', []);   // salariés importés
 let rosterIdx    = load('gc_rosterIdx', 0);
-let formLocked   = false;                    // formulaire validé/verrouillé
+let formLocked   = false;
 
 /* Migration douce : ajoute les modèles/sociétés par défaut manquants sans écraser tes données */
 DEFAULT_TEMPLATES.forEach(dt=>{
-  const ex=templates.find(t=>t.id===dt.id);
-  if(!ex){ templates.push(dt); }
+  const ex=ALL_templates.find(t=>t.id===dt.id);
+  if(!ex){ ALL_templates.push(dt); }
   else if(dt.defaults){ ex.defaults=Object.assign({}, dt.defaults, ex.defaults||{}); }
 });
-DEFAULT_COMPANIES.forEach(dc=>{ if(!companies.find(c=>c.id===dc.id)) companies.push(dc); });
-companies.forEach(c=>{ if(!c.defaultTpl||!templates.find(t=>t.id===c.defaultTpl)) c.defaultTpl='t_cdi'; });
-companies.forEach(c=>{ if(c.siegeAr===undefined){ const dc=DEFAULT_COMPANIES.find(x=>x.id===c.id); c.siegeAr=dc?dc.siegeAr:'إقامة لينا، رقم 259، سيدي معروف، الدار البيضاء، المغرب'; } });
-save('gc_templates',templates); save('gc_companies',companies);
-if(!templates.find(t=>t.id===selTplId)) selTplId=templates[0].id;
-if(!companies.find(c=>c.id===selCompanyId)) selCompanyId=companies[0].id;
+DEFAULT_COMPANIES.forEach(dc=>{ if(!ALL_companies.find(c=>c.id===dc.id)) ALL_companies.push(dc); });
+ALL_companies.forEach(c=>{ if(!c.defaultTpl||!ALL_templates.find(t=>t.id===c.defaultTpl)) c.defaultTpl='t_cdi'; });
+ALL_companies.forEach(c=>{ if(c.siegeAr===undefined){ const dc=DEFAULT_COMPANIES.find(x=>x.id===c.id); c.siegeAr=dc?dc.siegeAr:'إقامة لينا، رقم 259، سيدي معروف، الدار البيضاء، المغرب'; } });
+save('gc_templates', ALL_templates); save('gc_companies', ALL_companies);
+companies=[...ALL_templates]; // sera écrasé par applyProfile
+companies=[...ALL_companies];
+templates=[...ALL_templates];
+if(!templates.find(t=>t.id===selTplId)) selTplId=ALL_templates[0].id;
+if(!companies.find(c=>c.id===selCompanyId)) selCompanyId=ALL_companies[0].id;
 
 /* ============================================================
    UTILITAIRES
@@ -1820,7 +1824,7 @@ function editCompany(id){
 }
 function newCompany(){
   const c={id:uid('c'),nom:'Nouvelle société',siege:'',rc:'',ville:'Casablanca',representant:'',fonctionRep:'',defaultTpl:templates[0].id};
-  companies.push(c); save('gc_companies',companies); editCompany(c.id);
+  ALL_companies.push(c); save('gc_companies',ALL_companies); editCompany(c.id);
 }
 function saveCompany(){
   const c=getCompany(editingCompanyId);
@@ -1828,14 +1832,18 @@ function saveCompany(){
   c.siegeAr=document.getElementById('c_siegeAr').value;
   c.representant=c_rep.value; c.fonctionRep=c_fonctionRep.value;
   c.defaultTpl=document.getElementById('c_defaultTpl').value;
-  save('gc_companies',companies);
+  // Synchroniser dans ALL_companies
+  const ai=ALL_companies.findIndex(x=>x.id===editingCompanyId);
+  if(ai>=0) ALL_companies[ai]=c; else ALL_companies.push(c);
+  save('gc_companies',ALL_companies);
   closeModal('companyEdit'); renderCompanyList(); renderCompanySelect(); renderForm();
 }
 function deleteCompany(){
-  if(companies.length<=1) return;
+  if(ALL_companies.length<=1) return;
+  ALL_companies=ALL_companies.filter(c=>c.id!==editingCompanyId);
   companies=companies.filter(c=>c.id!==editingCompanyId);
-  if(selCompanyId===editingCompanyId) selCompanyId=companies[0].id;
-  save('gc_companies',companies);
+  if(selCompanyId===editingCompanyId) selCompanyId=companies[0]?.id||ALL_companies[0].id;
+  save('gc_companies',ALL_companies);
   closeModal('companyEdit'); renderCompanyList(); renderCompanySelect(); renderForm();
 }
 
@@ -1863,24 +1871,25 @@ function editTemplate(id){
 }
 function newTemplate(){
   const t={id:uid('t'),nom:'Nouveau modèle',corps:'# TITRE DU CONTRAT\n\nEntre la société **{{societe}}** ... et {{civilite}} **{{nomSalarie}}** ...\n\n## ARTICLE 1\nTexte de l\'article.'};
-  templates.push(t); save('gc_templates',templates); editTemplate(t.id);
+  ALL_templates.push(t); save('gc_templates',ALL_templates); editTemplate(t.id);
 }
 function dupTemplate(id){
   const src=getTpl(id);
   const t={id:uid('t'),nom:src.nom+' (copie)',corps:src.corps};
-  templates.push(t); save('gc_templates',templates); renderTplList(); renderCompanySelect();
+  ALL_templates.push(t); save('gc_templates',ALL_templates); renderTplList(); renderCompanySelect();
 }
 function saveTemplate(){
   const t=getTpl(editingTplId);
   t.nom=t_nom.value; t.corps=t_corps.value;
-  save('gc_templates',templates);
+  save('gc_templates',ALL_templates);
   closeModal('tplEdit'); renderTplList(); renderCompanySelect(); renderForm();
 }
 function deleteTemplate(){
-  if(templates.length<=1) return;
+  if(ALL_templates.length<=1) return;
+  ALL_templates=ALL_templates.filter(t=>t.id!==editingTplId);
   templates=templates.filter(t=>t.id!==editingTplId);
-  if(selTplId===editingTplId) selTplId=templates[0].id;
-  save('gc_templates',templates);
+  if(selTplId===editingTplId) selTplId=templates[0]?.id||ALL_templates[0].id;
+  save('gc_templates',ALL_templates);
   closeModal('tplEdit'); renderTplList(); renderCompanySelect(); renderForm();
 }
 
@@ -2463,14 +2472,12 @@ function doLogin(){
 
 /* --- Appliquer le profil utilisateur --- */
 function applyProfile(u){
-  /* Sociétés filtrées */
-  const allComp = (function(){ try{ return JSON.parse(localStorage.getItem('gc_companies'))||DEFAULT_COMPANIES; }catch(e){ return DEFAULT_COMPANIES; }})();
-  companies = allComp.filter(c=>u.societes.includes(c.id));
-  if(!companies.length) companies=[...DEFAULT_COMPANIES];
+  /* Filtrer depuis les listes COMPLÈTES */
+  companies = ALL_companies.filter(c=>u.societes.includes(c.id));
+  if(!companies.length) companies=[...ALL_companies];
 
-  /* Templates filtrés */
-  templates = DEFAULT_TEMPLATES.filter(t=>u.contrats.includes(t.id));
-  if(!templates.length) templates=[...DEFAULT_TEMPLATES];
+  templates = ALL_templates.filter(t=>u.contrats.includes(t.id));
+  if(!templates.length) templates=[...ALL_templates];
 
   /* Ajuster sélections courantes */
   if(!companies.find(c=>c.id===selCompanyId)) selCompanyId=companies[0].id;

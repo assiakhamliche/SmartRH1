@@ -270,7 +270,6 @@
 </style>
 
   <h1>Générateur de Contrats</h1>
-  <span id="userBadge" style="display:none;background:#e1f5ee;color:#0f7c74;border:1px solid #9fe1cb;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600">👤 <span id="userBadgeName"></span></span>
   <div class="toolbar">
     <div class="print-menu no-print">
       <button class="btn-ghost tb-btn" onclick="togglePop('companyPop',event)">Société : <b id="companyCur"></b> ▾</button>
@@ -280,7 +279,7 @@
       <button class="btn-ghost tb-btn" onclick="togglePop('tplPop',event)">Type de contrat : <b id="tplCur"></b> ▾</button>
       <div class="print-pop" id="tplPop"></div>
     </div>
-    <div class="print-menu no-print">
+    <div class="print-menu no-print" id="btnParametrage">
       <button class="btn-ghost" onclick="toggleSettings(event)">Paramétrage ▾</button>
       <div class="print-pop" id="settingsPop">
         <button onclick="settingsOpen('companies')">Sociétés</button>
@@ -303,6 +302,7 @@
     <button id="btnAdmin" class="btn-ghost no-print" onclick="openAdmin()" style="display:none">⚙ Admin</button>
     <button class="btn-ghost no-print" onclick="openChangePass()" title="Changer mon mot de passe" style="padding:8px 12px;font-size:13px">🔑 Mot de passe</button>
     <button class="btn-ghost no-print" onclick="doLogout()" title="Se déconnecter" style="padding:8px 10px">🔒</button>
+    <span id="userBadge" style="display:none;background:#e1f5ee;color:#0f7c74;border:1px solid #9fe1cb;border-radius:20px;padding:4px 14px;font-size:13px;font-weight:600;white-space:nowrap">👤 <span id="userBadgeName"></span></span>
     <div class="print-menu no-print">
       <button class="btn-gold" onclick="togglePrintMenu(event)">Imprimer / Envoyer ▾</button>
       <div class="print-pop" id="printPop">
@@ -2497,6 +2497,9 @@ function applyProfile(u){
   /* Bouton Admin */
   const ba=document.getElementById('btnAdmin');
   if(ba) ba.style.display=u.isAdmin?'':'none';
+  /* Paramétrage — admin seulement */
+  const bp=document.getElementById('btnParametrage');
+  if(bp) bp.style.display=u.isAdmin?'':'none';
 
   /* Forcer le re-render des dropdowns */
   if(typeof renderCompanySelect==='function') renderCompanySelect();

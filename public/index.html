@@ -1456,6 +1456,7 @@ let formData  = load('gc_formdata', {});
 let selCompanyId = load('gc_selCompany', companies[0].id);
 let selTplId     = load('gc_selTpl', templates[0].id);
 let rosterIdx    = load('gc_rosterIdx', 0);
+let roster       = load('gc_roster', []);
 let formLocked   = false;
 
 /* Migration douce : ajoute les modèles/sociétés par défaut manquants sans écraser tes données */

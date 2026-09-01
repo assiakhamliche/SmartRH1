@@ -2559,7 +2559,9 @@ function applyProfile(u){
   /* Masquer l'écran scan only si on revient à un profil normal */
   document.getElementById('scanOnlyScreen').style.display = 'none';
   document.querySelector('.layout').style.display = '';
+  document.querySelector('.layout').style.visibility = '';
   document.querySelector('header.app').style.display = '';
+  document.querySelector('header.app').style.visibility = '';
 
   /* Filtrer depuis les listes COMPLÈTES */
   companies = ALL_companies.filter(c=>u.societes.includes(c.id));
@@ -2749,16 +2751,20 @@ function adReset(){
 
 /* --- Init au chargement --- */
 window.addEventListener('load', async function(){
-  // Précharger users.json avant tout
-  await loadUsers();
+  // Cacher l'app le temps de charger le profil
+  document.querySelector('header.app').style.visibility = 'hidden';
+  document.querySelector('.layout').style.visibility = 'hidden';
+
+  // Précharger users.json
+  const users = await loadUsers();
   const u = getCurrentUser();
   if(u){
-    // Retrouver le profil à jour depuis users.json (mot de passe peut avoir changé)
-    const users = await loadUsers();
     const freshU = users.find(x=>x.id===u.id) || u;
     pinHide();
-    setTimeout(()=>applyProfile(freshU), 80);
+    applyProfile(freshU);
   } else {
+    document.querySelector('header.app').style.visibility = '';
+    document.querySelector('.layout').style.visibility = '';
     pinShow();
   }
 });

@@ -2749,11 +2749,15 @@ function adReset(){
 
 /* --- Init au chargement --- */
 window.addEventListener('load', async function(){
+  // Précharger users.json avant tout
+  await loadUsers();
   const u = getCurrentUser();
   if(u){
+    // Retrouver le profil à jour depuis users.json (mot de passe peut avoir changé)
+    const users = await loadUsers();
+    const freshU = users.find(x=>x.id===u.id) || u;
     pinHide();
-    // Attendre que renderCompanySelect soit appelé par l'app, puis écraser
-    setTimeout(()=>applyProfile(u), 50);
+    setTimeout(()=>applyProfile(freshU), 80);
   } else {
     pinShow();
   }

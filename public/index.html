@@ -1550,6 +1550,7 @@ function frDate(iso){
    RENDU DU FORMULAIRE
    ============================================================ */
 function renderCompanySelect(){
+  if(window._scanOnlyMode) return; // bloquer pour scanOnly
   const cCur=document.getElementById('companyCur'); if(cCur) cCur.textContent=getCompany(selCompanyId).nom;
   const cPop=document.getElementById('companyPop');
   if(cPop) cPop.innerHTML=companies.map(c=>`<button onclick="selectCompany('${c.id}')" class="${c.id===selCompanyId?'cur':''}">${c.nom}</button>`).join('');
@@ -1572,6 +1573,7 @@ function selectTpl(id){
 }
 
 function renderForm(){
+  if(window._scanOnlyMode) return; // bloquer pour scanOnly
   const tpl=getTpl(selTplId);
   const comp=getCompany(selCompanyId);
   const tokens=extractTokens(tpl.corps).filter(k=>!COMPANY_KEYS.includes(k));
@@ -1734,6 +1736,7 @@ function inlineFormat(s){
   return s;
 }
 function renderPreview(){
+  if(window._scanOnlyMode) return; // bloquer pour scanOnly
   const tpl=getTpl(selTplId);
   const pv=document.getElementById('preview');
   pv.setAttribute('dir', tpl.dir||'ltr');
@@ -2542,6 +2545,7 @@ async function doLogin(){
 function applyProfile(u){
   /* Profil Scanner CIN uniquement */
   if(u.scanOnly){
+    window._scanOnlyMode = true; // bloquer tous les rendus
     document.getElementById('userBadgeName').textContent = u.nom;
     document.getElementById('userBadge').style.display = '';
     document.getElementById('btnAdmin').style.display = 'none';
@@ -2556,6 +2560,7 @@ function applyProfile(u){
     return;
   }
 
+  window._scanOnlyMode = false;
   /* Masquer l'écran scan only si on revient à un profil normal */
   document.getElementById('scanOnlyScreen').style.display = 'none';
   document.querySelector('.layout').style.display = '';

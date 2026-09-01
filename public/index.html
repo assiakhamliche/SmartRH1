@@ -2527,7 +2527,7 @@ async function doLogin(){
   const users = await loadUsers();
   const u=users.find(x=>x.login && x.login.toLowerCase().replace(/\s+/g,'')=== login && x.pin===pass);
   if(u){
-    setCurrentUser(u);
+    setCurrentUser(u); // profil frais depuis users.json
     pinHide();
     applyProfile(u);
   } else {
@@ -2757,11 +2757,21 @@ window.addEventListener('load', async function(){
 
   // Précharger users.json
   const users = await loadUsers();
-  const u = getCurrentUser();
-  if(u){
-    const freshU = users.find(x=>x.id===u.id) || u;
-    pinHide();
-    applyProfile(freshU);
+  const session = getCurrentUser();
+  if(session){
+    // TOUJOURS utiliser le profil frais depuis users.json (pas la session en cache)
+    const freshU = users.find(x=>x.id===session.id);
+    if(freshU){
+      setCurrentUser(freshU); // mettre à jour la session
+      pinHide();
+      applyProfile(freshU);
+    } else {
+      // Utilisateur supprimé → déconnexion
+      sessionStorage.removeItem(AUTH_KEY);
+      document.querySelector('header.app').style.visibility = '';
+      document.querySelector('.layout').style.visibility = '';
+      pinShow();
+    }
   } else {
     document.querySelector('header.app').style.visibility = '';
     document.querySelector('.layout').style.visibility = '';

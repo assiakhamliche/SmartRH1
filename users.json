@@ -1,9 +1,0 @@
-[
-  { "id": "admin",     "nom": "Admin",            "login": "admin",            "pin": "0000", "isAdmin": true,  "societes": ["c_protect","c_proprete","c_maint","c_emploi","c_maroc","c_pcs","c_fiber"], "contrats": ["t_cdi","t_cdd","t_projet","t_fiber","t_pcs2","t_pcs2_v2"], "simulateur": true,  "import": true  },
-  { "id": "u_ilham",   "nom": "Ilham Elanbi",     "login": "ilham.elanbi",     "pin": "1234", "isAdmin": false, "societes": ["c_pcs","c_fiber"],     "contrats": ["t_cdi","t_projet","t_pcs2_v2"], "simulateur": true,  "import": true  },
-  { "id": "u_amina",   "nom": "Amina Elyahyaoui", "login": "amina.elyahyaoui", "pin": "2345", "isAdmin": false, "societes": ["c_maint"],             "contrats": ["t_cdi","t_projet"],             "simulateur": true,  "import": true  },
-  { "id": "u_nora",    "nom": "Nora Bennani",     "login": "nora.bennani",     "pin": "3456", "isAdmin": false, "societes": ["c_protect"],           "contrats": ["t_cdi","t_cdd"],               "simulateur": true,  "import": true  },
-  { "id": "u_oumaima", "nom": "Oumaima Achami",   "login": "oumaima.achami",   "pin": "4567", "isAdmin": false, "societes": ["c_proprete"],          "contrats": ["t_cdi","t_cdd"],               "simulateur": true,  "import": true  },
-  { "id": "u_khaoula", "nom": "Khaoula El Jihad", "login": "khaoula.eljihad",  "pin": "5678", "isAdmin": false, "societes": ["c_protect","c_proprete"], "contrats": ["t_cdi","t_cdd"],            "simulateur": false, "import": false },
-  { "id": "u_salma",   "nom": "Salma Ayoub",      "login": "salma.ayoub",      "pin": "6789", "isAdmin": false, "societes": [], "contrats": [],      "simulateur": false, "import": false, "scanOnly": true }
-]

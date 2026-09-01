@@ -158,9 +158,6 @@
     <button onclick="openScan()" style="width:100%;padding:16px;border-radius:10px;border:none;background:#0f7c74;color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:12px">
       📷 Lancer le scanner
     </button>
-    <button onclick="downloadScanExcel()" style="width:100%;padding:13px;border-radius:10px;border:1px solid #9fe1cb;background:#e1f5ee;color:#0f7c74;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px">
-      ⬇ Exporter Excel
-    </button>
     <button onclick="openOutils()" style="width:100%;padding:13px;border-radius:10px;border:1px solid #d9e8e7;background:#f5fafa;color:#26383b;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px">
       🛠️ Outils
     </button>
@@ -2285,14 +2282,13 @@ function frDateISO(iso){ if(!iso) return ''; const p=(''+iso).split('-'); return
 function downloadScanExcel(){
   const rows=window._scanRows||[];
   if(!rows.length){ return; }
-  const headers=["Civilite","Nom & prenom","Date naissance","Situation familiale","Adresse","Nationalite","CIN","Date de validite"];
+  const headers=["Civilite","Nom & prenom","Date naissance","Adresse","Nationalite","CIN","Date de validite"];
   const aoa=[headers];
   rows.forEach(r=>{
     aoa.push([
       r.civilite||"",
       r.nomSalarie||"",
       frDateISO(r.dateNaissance),
-      "",
       r.adresse||"",
       r.nationalite||"Marocaine",
       r.cin||"",

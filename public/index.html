@@ -2285,13 +2285,18 @@ function frDateISO(iso){ if(!iso) return ''; const p=(''+iso).split('-'); return
 function downloadScanExcel(){
   const rows=window._scanRows||[];
   if(!rows.length){ return; }
-  const headers=["Societe","Modele","Civilite","Nom & prenom","Date naissance","Situation familiale","Adresse","Nationalite","CIN","Fonction","Responsable hierarchique","Date debut","Date fin","Intitule du projet","Periode d'essai","Lieu de travail","Salaire de base","Indemnite panier","Indemnite transport","Remuneration nette","Ville contrat","Date contrat","Date de validite"];
+  const headers=["Civilite","Nom & prenom","Date naissance","Situation familiale","Adresse","Nationalite","CIN","Date de validite"];
   const aoa=[headers];
   rows.forEach(r=>{
     aoa.push([
-      "", "", r.civilite||"", r.nomSalarie||"", frDateISO(r.dateNaissance), "",
-      r.adresse||"", r.nationalite||"Marocaine", r.cin||"", "", "", "", "", "", "", "",
-      "", "", "", "", "", "", frDateISO(r.dateValidite)
+      r.civilite||"",
+      r.nomSalarie||"",
+      frDateISO(r.dateNaissance),
+      "",
+      r.adresse||"",
+      r.nationalite||"Marocaine",
+      r.cin||"",
+      frDateISO(r.dateValidite)
     ]);
   });
   const ws=XLSX.utils.aoa_to_sheet(aoa);
@@ -2319,11 +2324,8 @@ async function runScan(){
     save('gc_roster',roster); save('gc_rosterIdx',0);
     window._scanRows=rows;
     renderCompanySelect(); renderForm();
-    // Auto-télécharger si profil scanOnly
-    const curUser = getCurrentUser();
-    if(curUser && curUser.scanOnly){ setTimeout(downloadScanExcel, 500); }
-    status.innerHTML=`<div class="valbox ok"><b>✓ ${rows.length} CIN extraite(s)</b> — Excel téléchargé automatiquement.<br>Clique sur "Exporter Excel" dans l'écran principal pour télécharger à nouveau.</div>
-      <button class="btn-sec" style="width:100%;margin-top:10px" onclick="downloadScanExcel()">⬇ Télécharger l'Excel (format import)</button>`;
+    status.innerHTML=`<div class="valbox ok"><b>✓ ${rows.length} CIN extraite(s)</b> — Clique sur "Exporter Excel" pour télécharger.</div>
+      <button class="btn-sec" style="width:100%;margin-top:10px" onclick="downloadScanExcel()">⬇ Télécharger l'Excel</button>`;
   }catch(e){
     status.innerHTML='<div class="valbox err">Erreur : '+e.message+'</div>';
   }finally{ btn.disabled=false; btn.textContent='Lancer l\'extraction'; }

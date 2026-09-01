@@ -72,7 +72,7 @@
   .page[dir="rtl"] .indent{margin-left:0;margin-right:26px}
   .page[dir="rtl"] .sign div{text-align:right}
   /* modal */
-  .modal-bg{position:fixed;inset:0;background:rgba(15,25,45,.55);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:50;overflow-y:auto}
+  .modal-bg{position:fixed;inset:0;background:rgba(15,25,45,.55);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:999999;overflow-y:auto}
   .modal-bg.show{display:flex}
   .modal{background:#fff;border-radius:12px;width:100%;max-width:720px;padding:22px 24px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
   .modal h3{margin:0 0 16px;color:var(--navy)}
@@ -2371,7 +2371,7 @@ renderCompanySelect();
 renderForm();
 </script>
 <!-- ===== MODALE CHANGEMENT MOT DE PASSE ===== -->
-<div id="changePassModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9500;align-items:center;justify-content:center">
+<div id="changePassModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999999;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:14px;border:1px solid #d9e8e7;width:360px;max-width:95vw;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:28px 32px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div style="font-size:16px;font-weight:700;color:#0f7c74">🔑 Changer mon mot de passe</div>
@@ -2401,7 +2401,7 @@ renderForm();
 </div>
 
 <!-- ===== MODALE EXPORT USERS.JSON ===== -->
-<div id="exportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9800;align-items:center;justify-content:center">
+<div id="exportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999999;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:14px;width:520px;max-width:95vw;max-height:85vh;overflow-y:auto;padding:28px 32px;box-shadow:0 12px 40px rgba(0,0,0,.2)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <div>

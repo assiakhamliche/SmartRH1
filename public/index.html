@@ -2756,30 +2756,50 @@ function adReset(){
 
 /* --- Init au chargement --- */
 window.addEventListener('load', async function(){
-  // Cacher l'app le temps de charger le profil
   document.querySelector('header.app').style.visibility = 'hidden';
   document.querySelector('.layout').style.visibility = 'hidden';
 
-  // Précharger users.json
-  const users = await loadUsers();
   const session = getCurrentUser();
   if(session){
-    // TOUJOURS utiliser le profil frais depuis users.json (pas la session en cache)
+    // Charger users.json avec timeout, sinon utiliser BUILTIN_USERS
+    let users = BUILTIN_USERS;
+    try {
+      const ctrl = new AbortController();
+      setTimeout(()=>ctrl.abort(), 2000);
+      const r = await fetch(USERS_URL+'?v='+Date.now(), {signal:ctrl.signal});
+      if(r.ok){ const d=await r.json(); if(Array.isArray(d)&&d.length) users=d; }
+    } catch(e){}
+
+    // Toujours prendre le profil frais depuis les données chargées
     const freshU = users.find(x=>x.id===session.id);
     if(freshU){
-      setCurrentUser(freshU); // mettre à jour la session
+      setCurrentUser(freshU);
       pinHide();
-      applyProfile(freshU);
+      // Appliquer immédiatement avant tout rendu
+      if(freshU.scanOnly){
+        window._scanOnlyMode = true;
+        document.getElementById('scanOnlyScreen').style.display='flex';
+        const w=document.getElementById('scanOnlyWelcome');
+        if(w) w.textContent='Bonjour '+freshU.nom+' 👋';
+        document.getElementById('userBadgeName').textContent=freshU.nom;
+        document.getElementById('userBadge').style.display='';
+        document.getElementById('btnAdmin').style.display='none';
+        document.getElementById('btnParametrage').style.display='none';
+        // Laisser header et layout cachés — scanOnlyScreen couvre tout
+      } else {
+        applyProfile(freshU);
+        document.querySelector('header.app').style.visibility='';
+        document.querySelector('.layout').style.visibility='';
+      }
     } else {
-      // Utilisateur supprimé → déconnexion
       sessionStorage.removeItem(AUTH_KEY);
-      document.querySelector('header.app').style.visibility = '';
-      document.querySelector('.layout').style.visibility = '';
+      document.querySelector('header.app').style.visibility='';
+      document.querySelector('.layout').style.visibility='';
       pinShow();
     }
   } else {
-    document.querySelector('header.app').style.visibility = '';
-    document.querySelector('.layout').style.visibility = '';
+    document.querySelector('header.app').style.visibility='';
+    document.querySelector('.layout').style.visibility='';
     pinShow();
   }
 });

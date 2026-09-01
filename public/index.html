@@ -158,6 +158,9 @@
     <button onclick="openScan()" style="width:100%;padding:16px;border-radius:10px;border:none;background:#0f7c74;color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:12px">
       📷 Lancer le scanner
     </button>
+    <button onclick="downloadScanExcel()" style="width:100%;padding:13px;border-radius:10px;border:1px solid #9fe1cb;background:#e1f5ee;color:#0f7c74;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px">
+      ⬇ Exporter Excel
+    </button>
     <button onclick="openOutils()" style="width:100%;padding:13px;border-radius:10px;border:1px solid #d9e8e7;background:#f5fafa;color:#26383b;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px">
       🛠️ Outils
     </button>
@@ -2316,7 +2319,10 @@ async function runScan(){
     save('gc_roster',roster); save('gc_rosterIdx',0);
     window._scanRows=rows;
     renderCompanySelect(); renderForm();
-    status.innerHTML=`<div class="valbox ok"><b>✓ ${rows.length} CIN extraite(s)</b> chargée(s) dans la liste des salariés.<br>Ferme cette fenêtre, puis parcours les salariés avec « Précédent / Suivant » et clique « Appliquer ce salarié » pour remplir le contrat (ou « Imprimer tout » pour les sortir tous).</div>
+    // Auto-télécharger si profil scanOnly
+    const curUser = getCurrentUser();
+    if(curUser && curUser.scanOnly){ setTimeout(downloadScanExcel, 500); }
+    status.innerHTML=`<div class="valbox ok"><b>✓ ${rows.length} CIN extraite(s)</b> — Excel téléchargé automatiquement.<br>Clique sur "Exporter Excel" dans l'écran principal pour télécharger à nouveau.</div>
       <button class="btn-sec" style="width:100%;margin-top:10px" onclick="downloadScanExcel()">⬇ Télécharger l'Excel (format import)</button>`;
   }catch(e){
     status.innerHTML='<div class="valbox err">Erreur : '+e.message+'</div>';
@@ -2608,6 +2614,14 @@ function applyProfile(u){
 function doLogout(){
   sessionStorage.removeItem(AUTH_KEY);
   _usersCache = null;
+  window._scanOnlyMode = false;
+  // Cacher l'écran scanOnly
+  document.getElementById('scanOnlyScreen').style.display = 'none';
+  // Remettre l'app visible
+  const appH = document.getElementById('appHeader');
+  if(appH){ appH.style.display=''; appH.style.visibility=''; }
+  const layout = document.querySelector('.layout');
+  if(layout){ layout.style.display=''; layout.style.visibility=''; }
   pinShow();
 }
 

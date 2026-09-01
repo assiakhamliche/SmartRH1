@@ -158,6 +158,9 @@
     <button onclick="openScan()" style="width:100%;padding:16px;border-radius:10px;border:none;background:#0f7c74;color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:12px">
       📷 Lancer le scanner
     </button>
+    <button onclick="openOutils()" style="width:100%;padding:13px;border-radius:10px;border:1px solid #d9e8e7;background:#f5fafa;color:#26383b;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px">
+      🛠️ Outils
+    </button>
     <button onclick="openChangePass()" style="width:100%;padding:11px;border-radius:10px;border:1px solid #d9e8e7;background:#f5fafa;color:#26383b;font-size:13px;cursor:pointer;margin-bottom:12px">
       🔑 Changer mon mot de passe
     </button>
@@ -290,6 +293,7 @@
   .ad-badge-gray{background:#f5f5f3;color:#5a6060;border-color:#d9d9d5}
 </style>
 
+<div id="appHeader">
   <h1>Générateur de Contrats</h1>
   <div class="toolbar">
     <div class="print-menu no-print">
@@ -335,6 +339,7 @@
   </div>
 </header>
 
+</div>
 <div class="layout">
   <div class="panel-form" id="formPanel"></div>
   <div class="panel-preview"><div class="page" id="preview"></div></div>
@@ -2555,7 +2560,7 @@ function applyProfile(u){
     if(welcome) welcome.textContent = 'Bonjour ' + u.nom + ' 👋';
     // Masquer l'app principale et afficher écran scan only
     document.querySelector('.layout').style.display = 'none';
-    document.querySelector('header.app').style.display = 'none';
+    document.getElementById('appHeader').style.display = 'none';
     document.getElementById('scanOnlyScreen').style.display = 'flex';
     return;
   }
@@ -2565,8 +2570,8 @@ function applyProfile(u){
   document.getElementById('scanOnlyScreen').style.display = 'none';
   document.querySelector('.layout').style.display = '';
   document.querySelector('.layout').style.visibility = '';
-  document.querySelector('header.app').style.display = '';
-  document.querySelector('header.app').style.visibility = '';
+  document.getElementById('appHeader').style.display = '';
+  document.getElementById('appHeader').style.visibility = '';
 
   /* Filtrer depuis les listes COMPLÈTES */
   companies = ALL_companies.filter(c=>u.societes.includes(c.id));
@@ -2756,7 +2761,7 @@ function adReset(){
 
 /* --- Init au chargement --- */
 window.addEventListener('load', async function(){
-  document.querySelector('header.app').style.visibility = 'hidden';
+  document.getElementById('appHeader').style.visibility = 'hidden';
   document.querySelector('.layout').style.visibility = 'hidden';
 
   const session = getCurrentUser();
@@ -2788,17 +2793,17 @@ window.addEventListener('load', async function(){
         // Laisser header et layout cachés — scanOnlyScreen couvre tout
       } else {
         applyProfile(freshU);
-        document.querySelector('header.app').style.visibility='';
+        document.getElementById('appHeader').style.visibility='';
         document.querySelector('.layout').style.visibility='';
       }
     } else {
       sessionStorage.removeItem(AUTH_KEY);
-      document.querySelector('header.app').style.visibility='';
+      document.getElementById('appHeader').style.visibility='';
       document.querySelector('.layout').style.visibility='';
       pinShow();
     }
   } else {
-    document.querySelector('header.app').style.visibility='';
+    document.getElementById('appHeader').style.visibility='';
     document.querySelector('.layout').style.visibility='';
     pinShow();
   }
